@@ -1524,7 +1524,11 @@ class Component extends DCLogic {
   componentWillUnmount() { window.removeEventListener('resize', this._onResize); clearTimeout(this._t); clearTimeout(this._g); }
   componentDidUpdate(prev) { if (prev !== this.props) this.applyProps(); }
 
-  applyTheme() { document.body.dataset.theme = this.state.theme; }
+  /* Arrow, not a method: this is handed to setState as a callback, and the
+     runtime forwards that callback to the React wrapper, which invokes it
+     with `this` bound to the wrapper. A prototype method would read
+     `this.state.theme` off the wrapper and get undefined. */
+  applyTheme = () => { document.body.dataset.theme = this.state.theme; };
   applyProps() {
     const b = document.body;
     b.style.setProperty('--pad', this.props.density === 'compact' ? '16px' : this.props.density === 'spacious' ? '36px' : '24px');
@@ -2369,7 +2373,9 @@ class Component extends DCLogic {
     const act = s.expenses.reduce((a, e) => a + (e.actual_amount || 0), 0);
     const pax = active ? active.travellers : 1;
     const days = active ? active.number_of_days : 1;
-    const tints = ['var(--amber)', 'var(--teal)', 'var(--violet)', 'var(--coral)', '#7FA8D9', '#D9A87F', '#8FC98F', '#C98FBF', '#9FA8B3'];
+    /* One ink ramp for the budget breakdown, mixed against the page colour so
+       it inverts with the theme instead of staying pastel on black. */
+    const tints = [92, 80, 68, 57, 46, 37, 29, 22, 16].map(p => 'color-mix(in oklab, var(--tx) ' + p + '%, var(--bg))');
     const byCat = {};
     s.expenses.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + (e.estimated_amount || 0); });
     const cats = Object.keys(byCat);
