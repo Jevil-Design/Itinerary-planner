@@ -10,54 +10,58 @@
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
+  /* One typeface, one accent, flat surfaces. --amber is kept as the token name
+     because the whole template references it; it now carries plain ink, not a
+     colour. --onAccent is the text drawn on top of it, so the pair can invert
+     for dark mode without any markup changing. */
   body {
-    --bg:#0E1311; --surf:#151C19; --surf2:#1B2420; --surf3:#232E28;
-    --line:#2A3630; --line2:#3B4A43;
-    --tx:#ECE9E1; --tx2:#A0ABA4; --tx3:#6D7A73;
-    --amber:#E8A33D; --amberq:rgba(232,163,61,.13);
-    --teal:#46C79C; --tealq:rgba(70,199,156,.13);
-    --coral:#E4674A; --coralq:rgba(228,103,74,.13);
-    --violet:#9A8EE0; --violetq:rgba(154,142,224,.14);
-    --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 30px -12px rgba(0,0,0,.6);
-    --contour:rgba(255,255,255,.028);
-    --fd:'Instrument Serif', Georgia, serif;
-    --fm:'JetBrains Mono', ui-monospace, monospace;
-    --pad:20px;
+    --bg:#FFFFFF; --surf:#FFFFFF; --surf2:#FAFAFA; --surf3:#F4F4F4;
+    --line:#E7E7E7; --line2:#D0D0D0;
+    --tx:#171717; --tx2:#565656; --tx3:#9A9A9A;
+    --amber:#171717; --amberq:#F4F4F4; --onAccent:#FFFFFF;
+    --teal:#15803D; --tealq:rgba(21,128,61,.07);
+    --coral:#B42318; --coralq:rgba(180,35,24,.06);
+    --violet:#565656; --violetq:#F4F4F4;
+    --shadow:none;
+    --fd:'Inter', system-ui, -apple-system, sans-serif;
+    --fm:'Inter', system-ui, -apple-system, sans-serif;
+    --pad:24px;
     background:var(--bg); color:var(--tx);
-    font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family:'Inter', system-ui, -apple-system, sans-serif;
     font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased;
     text-wrap:pretty;
   }
-  body[data-theme="light"] {
-    --bg:#F1EEE6; --surf:#FFFDF8; --surf2:#F8F5EE; --surf3:#EEE9DE;
-    --line:#DFD8C9; --line2:#C6BCA8;
-    --tx:#181E1A; --tx2:#57615B; --tx3:#89928B;
-    --amber:#A96F14; --amberq:rgba(169,111,20,.11);
-    --teal:#177F5C; --tealq:rgba(23,127,92,.11);
-    --coral:#BF4227; --coralq:rgba(191,66,39,.1);
-    --violet:#584AA0; --violetq:rgba(88,74,160,.11);
-    --shadow:0 1px 2px rgba(70,58,34,.07), 0 10px 28px -14px rgba(70,58,34,.2);
-    --contour:rgba(40,30,10,.045);
+  body[data-theme="dark"] {
+    --bg:#0A0A0A; --surf:#0A0A0A; --surf2:#141414; --surf3:#1E1E1E;
+    --line:#262626; --line2:#3D3D3D;
+    --tx:#FAFAFA; --tx2:#A6A6A6; --tx3:#6B6B6B;
+    --amber:#FAFAFA; --amberq:#1E1E1E; --onAccent:#0A0A0A;
+    --teal:#4ADE80; --tealq:rgba(74,222,128,.10);
+    --coral:#F87171; --coralq:rgba(248,113,113,.10);
+    --violet:#A6A6A6; --violetq:#1E1E1E;
   }
-  a { color:var(--amber); text-decoration:none; }
-  a:hover { color:var(--tx); text-decoration:underline; }
+  a { color:var(--tx); text-decoration:underline; text-underline-offset:3px; }
+  a:hover { color:var(--tx2); }
   button { font-family:inherit; }
   input, select, textarea { font-family:inherit; font-size:14px; }
   ::selection { background:var(--amberq); }
-  @keyframes cRise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
-  @keyframes cFade { from { opacity:0; } to { opacity:1; } }
+  /* cSpin and cPulse report progress, so they stay. The entry and decorative
+     motion (cRise, cFade, cSweep, cDash) is neutralised here rather than
+     stripped from ~24 call sites in the template. */
+  @keyframes cRise { from { opacity:1; transform:none; } to { opacity:1; transform:none; } }
+  @keyframes cFade { from { opacity:1; } to { opacity:1; } }
   @keyframes cSpin { to { transform:rotate(360deg); } }
   @keyframes cPulse { 0%,100% { opacity:.35; } 50% { opacity:1; } }
-  @keyframes cDash { to { stroke-dashoffset:-40; } }
-  @keyframes cSweep { from { transform:translateX(-100%); } to { transform:translateX(320%); } }
+  @keyframes cDash { to { stroke-dashoffset:0; } }
+  @keyframes cSweep { from { transform:none; } to { transform:none; } }
 </style>
 </helmet>
 
-<div style="min-height:100vh; background:repeating-radial-gradient(circle at 88% 6%, transparent 0 46px, var(--contour) 46px 47px), radial-gradient(1100px 560px at 12% -8%, var(--amberq), transparent 62%), radial-gradient(820px 460px at 94% 4%, var(--tealq), transparent 60%), var(--bg);">
+<div style="min-height:100vh; background:var(--bg);">
 
 <sc-if value="{{ vLanding }}" hint-placeholder-val="{{ true }}">
 <div style="max-width:1240px; margin:0 auto; padding:0 24px 80px;">
@@ -68,23 +72,23 @@
       <span style="font-family:var(--fm); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--tx3);">AI trip engine</span>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
-      <button onClick="{{ toggleTheme }}" style="display:flex; align-items:center; gap:7px; background:transparent; border:1px solid var(--line); color:var(--tx2); border-radius:999px; padding:8px 14px; font-size:12px; font-family:var(--fm); letter-spacing:.08em; text-transform:uppercase; cursor:pointer;" style-hover="border-color:var(--line2); color:var(--tx);">{{ themeLabel }}</button>
-      <button onClick="{{ goLogin }}" style="background:transparent; border:1px solid var(--line); color:var(--tx); border-radius:999px; padding:9px 18px; font-size:14px; font-weight:600; cursor:pointer;" style-hover="border-color:var(--line2); background:var(--surf2);">Log in</button>
-      <button onClick="{{ goSignup }}" style="background:var(--amber); border:none; color:#12100B; border-radius:999px; padding:10px 20px; font-size:14px; font-weight:700; cursor:pointer;" style-hover="filter:brightness(1.08);">Create My Trip</button>
+      <button onClick="{{ toggleTheme }}" style="display:flex; align-items:center; gap:7px; background:transparent; border:1px solid var(--line); color:var(--tx2); border-radius:4px; padding:8px 14px; font-size:12px; font-family:var(--fm); letter-spacing:.08em; text-transform:uppercase; cursor:pointer;" style-hover="border-color:var(--line2); color:var(--tx);">{{ themeLabel }}</button>
+      <button onClick="{{ goLogin }}" style="background:transparent; border:1px solid var(--line); color:var(--tx); border-radius:4px; padding:9px 18px; font-size:14px; font-weight:600; cursor:pointer;" style-hover="border-color:var(--line2); background:var(--surf2);">Log in</button>
+      <button onClick="{{ goSignup }}" style="background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:10px 20px; font-size:14px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Create My Trip</button>
     </div>
   </header>
 
   <section style="display:grid; grid-template-columns:repeat(auto-fit, minmax(420px,1fr)); gap:48px; align-items:center; padding:52px 0 64px;">
     <div style="animation:cRise .7s ease both;">
-      <div style="display:inline-flex; align-items:center; gap:9px; border:1px solid var(--line); background:var(--surf); border-radius:999px; padding:6px 14px; font-family:var(--fm); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--tx2);">
+      <div style="display:inline-flex; align-items:center; gap:9px; border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:6px 14px; font-family:var(--fm); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--tx2);">
         <span style="width:6px; height:6px; border-radius:50%; background:var(--teal); animation:cPulse 2.2s ease-in-out infinite;"></span>
         Source · Destination · Dates
       </div>
       <h1 style="font-family:var(--fd); font-weight:400; font-size:clamp(46px,6.2vw,78px); line-height:1.02; letter-spacing:-.018em; margin:22px 0 0;">Plan Your Entire Trip <span style="font-style:italic; color:var(--amber);">With AI</span></h1>
       <p style="font-size:18px; line-height:1.6; color:var(--tx2); max-width:44ch; margin:20px 0 0;">Enter your source, destination and travel dates. Get a complete personalized itinerary in seconds.</p>
       <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:30px;">
-        <button onClick="{{ goSignup }}" style="background:var(--amber); border:none; color:#12100B; border-radius:999px; padding:15px 28px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:var(--shadow);" style-hover="filter:brightness(1.08); transform:translateY(-1px);">Create My Trip</button>
-        <a href="#features" style="border:1px solid var(--line2); color:var(--tx); border-radius:999px; padding:15px 26px; font-size:15px; font-weight:600; text-decoration:none;" style-hover="background:var(--surf2); text-decoration:none;">Explore Features</a>
+        <button onClick="{{ goSignup }}" style="background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:15px 28px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:var(--shadow);" style-hover="opacity:.82; transform:translateY(-1px);">Create My Trip</button>
+        <a href="#features" style="border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:15px 26px; font-size:15px; font-weight:600; text-decoration:none;" style-hover="background:var(--surf2); text-decoration:none;">Explore Features</a>
       </div>
       <div style="display:flex; flex-wrap:wrap; gap:26px; margin-top:38px; padding-top:26px; border-top:1px solid var(--line);">
         <div>
@@ -103,7 +107,7 @@
     </div>
 
     <div style="animation:cRise .8s .12s ease both;">
-      <div style="background:var(--surf); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); overflow:hidden;">
+      <div style="background:var(--surf); border:1px solid var(--line); border-radius:4px; box-shadow:var(--shadow); overflow:hidden;">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); background:var(--surf2);">
           <span style="font-family:var(--fm); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--tx3);">Generated itinerary</span>
           <span style="display:inline-flex; align-items:center; gap:6px; font-family:var(--fm); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal);">
@@ -114,7 +118,7 @@
           <div style="font-family:var(--fm); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--amber);">Bike · Moderate · 4 travellers</div>
           <div style="font-family:var(--fd); font-size:31px; line-height:1.15; margin-top:8px;">Kolkata → Rinchenpong</div>
           <div style="font-size:13px; color:var(--tx2); margin-top:4px;">23 Jan – 27 Jan 2027 · 5 days, 4 nights</div>
-          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1px; margin-top:20px; background:var(--line); border:1px solid var(--line); border-radius:12px; overflow:hidden;">
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1px; margin-top:20px; background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
             <div style="background:var(--surf); padding:13px 11px;">
               <div style="font-family:var(--fm); font-size:16px;">1,430</div>
               <div style="font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3); margin-top:2px;">km</div>
@@ -157,7 +161,7 @@
       <h2 style="font-family:var(--fd); font-weight:400; font-size:38px; margin:0; letter-spacing:-.01em;">Everything the trip needs</h2>
       <span style="font-family:var(--fm); font-size:10.5px; letter-spacing:.15em; text-transform:uppercase; color:var(--tx3);">Nine modules · one generate</span>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-top:none; border-radius:0 0 16px 16px; overflow:hidden; margin-top:0;">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-top:none; border-radius:0 0 4px 4px; overflow:hidden; margin-top:0;">
       <sc-for list="{{ features }}" as="f" hint-placeholder-count="9">
         <div style="background:var(--surf); padding:26px 22px 28px; transition:background .18s; box-shadow:1px 0 0 var(--line), 0 1px 0 var(--line);" style-hover="background:var(--surf2);">
           <div style="font-family:var(--fm); font-size:10px; letter-spacing:.14em; color:{{ f.tint }};">{{ f.num }}</div>
@@ -168,21 +172,21 @@
     </div>
   </section>
 
-  <section style="margin-top:52px; border:1px solid var(--line); border-radius:18px; background:var(--surf); padding:34px 30px; display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:28px; align-items:center;">
+  <section style="margin-top:52px; border:1px solid var(--line); border-radius:4px; background:var(--surf); padding:34px 30px; display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:28px; align-items:center;">
     <div>
       <div style="font-family:var(--fm); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--teal);">Honest by default</div>
       <h3 style="font-family:var(--fd); font-weight:400; font-size:30px; margin:10px 0 0; letter-spacing:-.01em;">Every recommendation carries its source</h3>
       <p style="font-size:14.5px; color:var(--tx2); margin:12px 0 0; max-width:52ch;">Live data is marked verified. Anything the model estimated — a price band, an opening time, a stay suggestion — is labelled so you check it before you book. No invented hotels, no invented schedules.</p>
     </div>
     <div style="display:flex; flex-direction:column; gap:12px;">
-      <div style="display:flex; align-items:center; gap:11px; border:1px solid var(--line); background:var(--surf2); border-radius:12px; padding:14px 16px;">
+      <div style="display:flex; align-items:center; gap:11px; border:1px solid var(--line); background:var(--surf2); border-radius:4px; padding:14px 16px;">
         <span style="font-family:var(--fm); font-size:13px; color:var(--teal);">✓</span>
         <div>
           <div style="font-size:13.5px; font-weight:700; color:var(--teal);">Verified Information</div>
           <div style="font-size:12px; color:var(--tx3);">Backed by a live API response</div>
         </div>
       </div>
-      <div style="display:flex; align-items:center; gap:11px; border:1px solid var(--line); background:var(--surf2); border-radius:12px; padding:14px 16px;">
+      <div style="display:flex; align-items:center; gap:11px; border:1px solid var(--line); background:var(--surf2); border-radius:4px; padding:14px 16px;">
         <span style="font-family:var(--fm); font-size:13px; color:var(--amber);">✦</span>
         <div>
           <div style="font-size:13.5px; font-weight:700; color:var(--amber);">AI Recommendation</div>
@@ -192,10 +196,10 @@
     </div>
   </section>
 
-  <section style="margin-top:52px; text-align:center; padding:44px 20px; border:1px solid var(--line); border-radius:18px; background:repeating-radial-gradient(circle at 50% 120%, transparent 0 40px, var(--contour) 40px 41px), var(--surf2);">
+  <section style="margin-top:52px; text-align:center; padding:44px 20px; border:1px solid var(--line); border-radius:4px; background:var(--surf2);">
     <h3 style="font-family:var(--fd); font-weight:400; font-size:clamp(30px,4vw,44px); margin:0; letter-spacing:-.015em;">Give it a source and a destination.</h3>
     <p style="font-size:16px; color:var(--tx2); margin:12px auto 0; max-width:48ch;">Contour builds, optimizes, saves and manages the rest — and keeps it synced to your account.</p>
-    <button onClick="{{ goSignup }}" style="margin-top:26px; background:var(--amber); border:none; color:#12100B; border-radius:999px; padding:15px 30px; font-size:15px; font-weight:700; cursor:pointer;" style-hover="filter:brightness(1.08);">Create My Trip</button>
+    <button onClick="{{ goSignup }}" style="margin-top:26px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:15px 30px; font-size:15px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Create My Trip</button>
   </section>
 
   <footer style="margin-top:44px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; font-family:var(--fm); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--tx3);">
@@ -208,7 +212,7 @@
 <sc-if value="{{ vAuth }}" hint-placeholder-val="{{ false }}">
 <div style="min-height:100vh; display:grid; grid-template-columns:{{ authCols }};">
   <sc-if value="{{ wide }}" hint-placeholder-val="{{ false }}">
-  <div style="padding:34px 40px; border-right:1px solid var(--line); background:repeating-radial-gradient(circle at 20% 80%, transparent 0 52px, var(--contour) 52px 53px), var(--surf); display:flex; flex-direction:column; justify-content:space-between;">
+  <div style="padding:34px 40px; border-right:1px solid var(--line); background:var(--surf); display:flex; flex-direction:column; justify-content:space-between;">
     <div style="display:flex; align-items:baseline; gap:12px;">
       <span style="font-family:var(--fd); font-size:26px;">Contour</span>
       <span style="font-family:var(--fm); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--tx3);">AI trip engine</span>
@@ -228,21 +232,21 @@
         <h1 style="font-family:var(--fd); font-weight:400; font-size:34px; margin:0; letter-spacing:-.01em;">Reset your password</h1>
         <p style="font-size:14px; color:var(--tx2); margin:8px 0 26px;">We'll email you a secure reset link. The link expires in one hour.</p>
         <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Email</label>
-        <input type="email" value="{{ authEmail }}" onChange="{{ onAuthEmail }}" placeholder="you@example.com" style="width:100%; background:var(--surf); border:1px solid var(--line); border-radius:10px; padding:13px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
-        <button onClick="{{ sendReset }}" style="width:100%; margin-top:16px; background:var(--amber); border:none; color:#12100B; border-radius:10px; padding:14px; font-size:14.5px; font-weight:700; cursor:pointer;" style-hover="filter:brightness(1.08);">Send reset link</button>
-        <button onClick="{{ goLogin }}" style="width:100%; margin-top:12px; background:transparent; border:1px solid var(--line); color:var(--tx2); border-radius:10px; padding:13px; font-size:14px; cursor:pointer;" style-hover="color:var(--tx); border-color:var(--line2);">Back to log in</button>
+        <input type="email" value="{{ authEmail }}" onChange="{{ onAuthEmail }}" placeholder="you@example.com" style="width:100%; background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:13px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+        <button onClick="{{ sendReset }}" style="width:100%; margin-top:16px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:14px; font-size:14.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Send reset link</button>
+        <button onClick="{{ goLogin }}" style="width:100%; margin-top:12px; background:transparent; border:1px solid var(--line); color:var(--tx2); border-radius:4px; padding:13px; font-size:14px; cursor:pointer;" style-hover="color:var(--tx); border-color:var(--line2);">Back to log in</button>
       </sc-if>
 
       <sc-if value="{{ authForm }}" hint-placeholder-val="{{ true }}">
         <h1 style="font-family:var(--fd); font-weight:400; font-size:34px; margin:0; letter-spacing:-.01em;">{{ authTitle }}</h1>
         <p style="font-size:14px; color:var(--tx2); margin:8px 0 24px;">{{ authSub }}</p>
 
-        <div style="display:flex; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:22px;">
+        <div style="display:flex; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden; margin-bottom:22px;">
           <button onClick="{{ goLogin }}" style="flex:1; background:{{ loginTabBg }}; border:none; color:{{ loginTabFg }}; padding:11px; font-size:13px; font-weight:600; cursor:pointer;">Log in</button>
           <button onClick="{{ goSignup }}" style="flex:1; background:{{ signupTabBg }}; border:none; color:{{ signupTabFg }}; padding:11px; font-size:13px; font-weight:600; cursor:pointer;">Sign up</button>
         </div>
 
-        <button onClick="{{ googleAuth }}" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; background:var(--surf); border:1px solid var(--line2); color:var(--tx); border-radius:10px; padding:13px; font-size:14px; font-weight:600; cursor:pointer;" style-hover="background:var(--surf2);">
+        <button onClick="{{ googleAuth }}" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; background:var(--surf); border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:13px; font-size:14px; font-weight:600; cursor:pointer;" style-hover="background:var(--surf2);">
           <span style="font-family:var(--fm); font-weight:700; font-size:15px; color:var(--amber);">G</span> Continue with Google
         </button>
         <div style="display:flex; align-items:center; gap:12px; margin:20px 0;">
@@ -255,27 +259,27 @@
           <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
             <div>
               <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Full name</label>
-              <input value="{{ authName }}" onChange="{{ onAuthName }}" placeholder="Arjun Mehta" style="width:100%; background:var(--surf); border:1px solid var(--line); border-radius:10px; padding:13px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+              <input value="{{ authName }}" onChange="{{ onAuthName }}" placeholder="Arjun Mehta" style="width:100%; background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:13px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
             </div>
           </sc-if>
           <div>
             <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Email</label>
-            <input type="email" value="{{ authEmail }}" onChange="{{ onAuthEmail }}" placeholder="you@example.com" style="width:100%; background:var(--surf); border:1px solid var(--line); border-radius:10px; padding:13px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+            <input type="email" value="{{ authEmail }}" onChange="{{ onAuthEmail }}" placeholder="you@example.com" style="width:100%; background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:13px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
           </div>
           <div>
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;">
               <label style="font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3);">Password</label>
               <button onClick="{{ goReset }}" style="background:none; border:none; color:var(--amber); font-size:11.5px; cursor:pointer; padding:0;" style-hover="color:var(--tx);">Forgot?</button>
             </div>
-            <input type="password" value="{{ authPass }}" onChange="{{ onAuthPass }}" placeholder="••••••••" style="width:100%; background:var(--surf); border:1px solid var(--line); border-radius:10px; padding:13px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+            <input type="password" value="{{ authPass }}" onChange="{{ onAuthPass }}" placeholder="••••••••" style="width:100%; background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:13px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
           </div>
         </div>
 
         <sc-if value="{{ hasAuthErr }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:14px; border:1px solid var(--coral); background:var(--coralq); color:var(--coral); border-radius:10px; padding:11px 13px; font-size:13px;">{{ authErr }}</div>
+          <div style="margin-top:14px; border:1px solid var(--coral); background:var(--coralq); color:var(--coral); border-radius:4px; padding:11px 13px; font-size:13px;">{{ authErr }}</div>
         </sc-if>
 
-        <button onClick="{{ submitAuth }}" style="width:100%; margin-top:20px; background:var(--amber); border:none; color:#12100B; border-radius:10px; padding:14px; font-size:14.5px; font-weight:700; cursor:pointer;" style-hover="filter:brightness(1.08);">{{ authCta }}</button>
+        <button onClick="{{ submitAuth }}" style="width:100%; margin-top:20px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:14px; font-size:14.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">{{ authCta }}</button>
         <p style="font-size:12px; color:var(--tx3); margin:16px 0 0; text-align:center;">Demo account is pre-filled — just press {{ authCta }}.</p>
       </sc-if>
     </div>
@@ -303,7 +307,7 @@
           <div style="font-family:var(--fm); font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:var(--tx3); padding:0 10px 8px;">{{ g.label }}</div>
           <div style="display:flex; flex-direction:column; gap:1px;">
             <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="5">
-              <button onClick="{{ it.go }}" style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; text-align:left; background:{{ it.bg }}; border:none; border-left:2px solid {{ it.bar }}; color:{{ it.fg }}; padding:9px 12px; font-size:13.5px; font-weight:{{ it.weight }}; border-radius:0 8px 8px 0; cursor:pointer;" style-hover="background:var(--surf2); color:var(--tx);">
+              <button onClick="{{ it.go }}" style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; text-align:left; background:{{ it.bg }}; border:none; border-left:2px solid {{ it.bar }}; color:{{ it.fg }}; padding:9px 12px; font-size:13.5px; font-weight:{{ it.weight }}; border-radius:0 4px 4px 0; cursor:pointer;" style-hover="background:var(--surf2); color:var(--tx);">
                 <span>{{ it.label }}</span>
                 <span style="font-family:var(--fm); font-size:10px; color:var(--tx3);">{{ it.badge }}</span>
               </button>
@@ -318,20 +322,20 @@
         <div style="font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ userName }}</div>
         <div style="font-size:11px; color:var(--tx3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ userEmail }}</div>
       </div>
-      <button onClick="{{ logout }}" title="Log out" style="background:transparent; border:1px solid var(--line); color:var(--tx3); border-radius:8px; padding:5px 8px; font-family:var(--fm); font-size:10px; cursor:pointer;" style-hover="color:var(--coral); border-color:var(--coral);">Out</button>
+      <button onClick="{{ logout }}" title="Log out" style="background:transparent; border:1px solid var(--line); color:var(--tx3); border-radius:4px; padding:5px 8px; font-family:var(--fm); font-size:10px; cursor:pointer;" style-hover="color:var(--coral); border-color:var(--coral);">Out</button>
     </div>
   </aside>
   </sc-if>
 
   <main style="flex:1; min-width:0; display:flex; flex-direction:column; padding-bottom:{{ mainPadBottom }};">
-    <div style="position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:13px var(--pad); border-bottom:1px solid var(--line); background:color-mix(in oklab, var(--bg) 88%, transparent); backdrop-filter:blur(12px);">
+    <div style="position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:13px var(--pad); border-bottom:1px solid var(--line); background:var(--bg);">
       <div style="min-width:0;">
         <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--tx3);">{{ crumb }}</div>
         <div style="font-size:17px; font-weight:700; letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ sectionTitle }}</div>
       </div>
       <div style="display:flex; align-items:center; gap:8px; flex:none;">
-        <button onClick="{{ toggleTheme }}" style="background:transparent; border:1px solid var(--line); color:var(--tx2); border-radius:8px; padding:8px 11px; font-family:var(--fm); font-size:10px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer;" style-hover="color:var(--tx); border-color:var(--line2);">{{ themeLabel }}</button>
-        <button onClick="{{ startCreate }}" style="background:var(--amber); border:none; color:#12100B; border-radius:8px; padding:9px 15px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;" style-hover="filter:brightness(1.08);">+ New trip</button>
+        <button onClick="{{ toggleTheme }}" style="background:transparent; border:1px solid var(--line); color:var(--tx2); border-radius:4px; padding:8px 11px; font-family:var(--fm); font-size:10px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer;" style-hover="color:var(--tx); border-color:var(--line2);">{{ themeLabel }}</button>
+        <button onClick="{{ startCreate }}" style="background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:9px 15px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;" style-hover="opacity:.82;">+ New trip</button>
       </div>
     </div>
 
@@ -341,7 +345,7 @@
       <div style="max-width:1120px; margin:0 auto; animation:cFade .3s ease both;">
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:12px;">
           <sc-for list="{{ dashStats }}" as="s" hint-placeholder-count="4">
-            <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:16px 17px;">
+            <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:16px 17px;">
               <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3);">{{ s.label }}</div>
               <div style="font-family:var(--fm); font-size:27px; font-weight:500; margin-top:8px; color:{{ s.tint }};">{{ s.value }}</div>
               <div style="font-size:12px; color:var(--tx3); margin-top:2px;">{{ s.sub }}</div>
@@ -350,7 +354,7 @@
         </div>
 
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px,1fr)); gap:14px; margin-top:14px;">
-          <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:18px;">
+          <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:18px;">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
               <div style="font-size:14.5px; font-weight:700;">Estimated spend by trip</div>
               <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--tx3);">₹ thousands</span>
@@ -359,14 +363,14 @@
               <sc-for list="{{ spendBars }}" as="b" hint-placeholder-count="4">
                 <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end;">
                   <span style="font-family:var(--fm); font-size:11px; color:var(--tx2);">{{ b.val }}</span>
-                  <div style="width:100%; max-width:46px; height:{{ b.h }}; border-radius:6px 6px 2px 2px; background:{{ b.fill }};"></div>
+                  <div style="width:100%; max-width:46px; height:{{ b.h }}; border-radius:2px 2px 0 0; background:{{ b.fill }};"></div>
                   <span style="font-size:11px; color:var(--tx3); text-align:center; line-height:1.25;">{{ b.label }}</span>
                 </div>
               </sc-for>
             </div>
           </div>
 
-          <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:18px;">
+          <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:18px;">
             <div style="font-size:14.5px; font-weight:700;">Travel patterns</div>
             <div style="display:flex; flex-direction:column; gap:14px; margin-top:18px;">
               <sc-for list="{{ patterns }}" as="p" hint-placeholder-count="4">
@@ -384,15 +388,15 @@
           </div>
         </div>
 
-        <div style="margin-top:14px; border:1px solid var(--amber); background:repeating-radial-gradient(circle at 96% 0%, transparent 0 40px, var(--contour) 40px 41px), var(--surf); border-radius:14px; padding:20px; display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:20px; align-items:center;">
+        <div style="margin-top:14px; border:1px solid var(--amber); background:var(--surf); border-radius:4px; padding:20px; display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:20px; align-items:center;">
           <div>
             <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--amber);">Next departure · in 128 days</div>
             <div style="font-family:var(--fd); font-size:29px; line-height:1.15; margin-top:7px;">{{ activeTripTitle }}</div>
             <div style="font-size:13px; color:var(--tx2); margin-top:3px;">{{ activeTripMeta }}</div>
           </div>
           <div style="display:flex; flex-wrap:wrap; gap:9px; justify-content:flex-end;">
-            <button onClick="{{ goItinerary }}" style="background:var(--amber); border:none; color:#12100B; border-radius:9px; padding:11px 18px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="filter:brightness(1.08);">Open itinerary</button>
-            <button onClick="{{ goMap }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx); border-radius:9px; padding:11px 16px; font-size:13.5px; font-weight:600; cursor:pointer;" style-hover="background:var(--surf2);">Route map</button>
+            <button onClick="{{ goItinerary }}" style="background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:11px 18px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Open itinerary</button>
+            <button onClick="{{ goMap }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:11px 16px; font-size:13.5px; font-weight:600; cursor:pointer;" style-hover="background:var(--surf2);">Route map</button>
           </div>
         </div>
 
@@ -403,13 +407,13 @@
           </div>
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(270px,1fr)); gap:12px; margin-top:14px;">
             <sc-for list="{{ recs }}" as="r" hint-placeholder-count="5">
-              <div style="border:1px solid var(--line); background:var(--surf); border-radius:13px; padding:16px;">
+              <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:16px;">
                 <div style="display:flex; align-items:center; gap:8px;">
                   <span style="width:6px; height:6px; border-radius:50%; background:{{ r.tint }};"></span>
                   <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:{{ r.tint }};">{{ r.kind }}</span>
                 </div>
                 <div style="font-size:13.5px; line-height:1.55; color:var(--tx2); margin-top:10px;">{{ r.body }}</div>
-                <button onClick="{{ r.apply }}" style="margin-top:12px; background:transparent; border:1px solid var(--line2); color:var(--tx); border-radius:8px; padding:7px 13px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:var(--surf2);">{{ r.cta }}</button>
+                <button onClick="{{ r.apply }}" style="margin-top:12px; background:transparent; border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:7px 13px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:var(--surf2);">{{ r.cta }}</button>
               </div>
             </sc-for>
           </div>
@@ -420,13 +424,13 @@
       <sc-if value="{{ sTrips }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:1120px; margin:0 auto; animation:cFade .3s ease both;">
         <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
-          <input value="{{ tripSearch }}" onChange="{{ onTripSearch }}" placeholder="Search trip name or destination…" style="flex:1; min-width:200px; background:var(--surf); border:1px solid var(--line); border-radius:10px; padding:11px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
-          <select value="{{ tripFilterMode }}" onChange="{{ onTripMode }}" style="background:var(--surf); border:1px solid var(--line); border-radius:10px; padding:11px 12px; color:var(--tx); outline:none; cursor:pointer;">
+          <input value="{{ tripSearch }}" onChange="{{ onTripSearch }}" placeholder="Search trip name or destination…" style="flex:1; min-width:200px; background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:11px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+          <select value="{{ tripFilterMode }}" onChange="{{ onTripMode }}" style="background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:11px 12px; color:var(--tx); outline:none; cursor:pointer;">
             <sc-for list="{{ modeOptions }}" as="m" hint-placeholder-count="7">
               <option value="{{ m }}">{{ m }}</option>
             </sc-for>
           </select>
-          <select value="{{ tripSort }}" onChange="{{ onTripSort }}" style="background:var(--surf); border:1px solid var(--line); border-radius:10px; padding:11px 12px; color:var(--tx); outline:none; cursor:pointer;">
+          <select value="{{ tripSort }}" onChange="{{ onTripSort }}" style="background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:11px 12px; color:var(--tx); outline:none; cursor:pointer;">
             <sc-for list="{{ sortOptions }}" as="s" hint-placeholder-count="4">
               <option value="{{ s }}">{{ s }}</option>
             </sc-for>
@@ -437,10 +441,10 @@
 
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:13px;">
           <sc-for list="{{ visibleTrips }}" as="t" hint-placeholder-count="4">
-            <div style="border:1px solid {{ t.border }}; background:var(--surf); border-radius:15px; overflow:hidden; display:flex; flex-direction:column;" style-hover="border-color:var(--line2);">
+            <div style="border:1px solid {{ t.border }}; background:var(--surf); border-radius:4px; overflow:hidden; display:flex; flex-direction:column;" style-hover="border-color:var(--line2);">
               <div style="padding:16px 17px 14px;">
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                  <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:{{ t.statusTint }}; border:1px solid {{ t.statusTint }}; border-radius:999px; padding:3px 9px;">{{ t.status }}</span>
+                  <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:{{ t.statusTint }}; border:1px solid {{ t.statusTint }}; border-radius:4px; padding:3px 9px;">{{ t.status }}</span>
                   <span style="font-family:var(--fm); font-size:10.5px; color:var(--tx3);">{{ t.modeLabel }}</span>
                 </div>
                 <div style="font-size:17px; font-weight:700; margin-top:12px; letter-spacing:-.01em;">{{ t.trip_name }}</div>
@@ -475,10 +479,10 @@
         </div>
 
         <sc-if value="{{ noTrips }}" hint-placeholder-val="{{ false }}">
-          <div style="border:1px dashed var(--line2); border-radius:15px; padding:44px 20px; text-align:center;">
+          <div style="border:1px dashed var(--line2); border-radius:4px; padding:44px 20px; text-align:center;">
             <div style="font-family:var(--fd); font-size:26px;">No trips match that</div>
             <p style="font-size:13.5px; color:var(--tx2); margin:8px 0 18px;">Try clearing the search or the travel-mode filter.</p>
-            <button onClick="{{ clearFilters }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx); border-radius:9px; padding:10px 18px; font-size:13px; font-weight:600; cursor:pointer;">Clear filters</button>
+            <button onClick="{{ clearFilters }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:10px 18px; font-size:13px; font-weight:600; cursor:pointer;">Clear filters</button>
           </div>
         </sc-if>
       </div>
@@ -495,7 +499,7 @@
           </sc-for>
         </div>
 
-        <div style="border:1px solid var(--line); background:var(--surf); border-radius:16px; padding:24px;">
+        <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:24px;">
 
           <sc-if value="{{ w1 }}" hint-placeholder-val="{{ true }}">
             <div style="font-family:var(--fd); font-size:28px; letter-spacing:-.01em;">Where are you going?</div>
@@ -503,34 +507,34 @@
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:16px;">
               <div style="grid-column:1/-1;">
                 <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Trip name</label>
-                <input value="{{ dName }}" onChange="{{ onName }}" placeholder="Rinchenpong Winter Ride" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+                <input value="{{ dName }}" onChange="{{ onName }}" placeholder="Rinchenpong Winter Ride" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
               </div>
               <div>
                 <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Source</label>
-                <input value="{{ dSource }}" onChange="{{ onSource }}" placeholder="Kolkata" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+                <input value="{{ dSource }}" onChange="{{ onSource }}" placeholder="Kolkata" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
               </div>
               <div>
                 <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Destination</label>
-                <input value="{{ dDest }}" onChange="{{ onDest }}" placeholder="Rinchenpong, Sikkim" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+                <input value="{{ dDest }}" onChange="{{ onDest }}" placeholder="Rinchenpong, Sikkim" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
               </div>
               <div>
                 <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Start date</label>
-                <input type="date" value="{{ dStart }}" onChange="{{ onStart }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+                <input type="date" value="{{ dStart }}" onChange="{{ onStart }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
               </div>
               <div>
                 <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">End date</label>
-                <input type="date" value="{{ dEnd }}" onChange="{{ onEnd }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+                <input type="date" value="{{ dEnd }}" onChange="{{ onEnd }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
               </div>
               <div>
                 <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Travellers</label>
-                <input type="number" min="1" max="40" value="{{ dPax }}" onChange="{{ onPax }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+                <input type="number" min="1" max="40" value="{{ dPax }}" onChange="{{ onPax }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
               </div>
               <div style="display:flex; gap:10px; align-items:stretch;">
-                <div style="flex:1; border:1px solid var(--line); background:var(--surf2); border-radius:10px; padding:10px 13px; display:flex; flex-direction:column; justify-content:center;">
+                <div style="flex:1; border:1px solid var(--line); background:var(--surf2); border-radius:4px; padding:10px 13px; display:flex; flex-direction:column; justify-content:center;">
                   <div style="font-family:var(--fm); font-size:19px;">{{ dayCount }}</div>
                   <div style="font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3);">Days</div>
                 </div>
-                <div style="flex:1; border:1px solid var(--line); background:var(--surf2); border-radius:10px; padding:10px 13px; display:flex; flex-direction:column; justify-content:center;">
+                <div style="flex:1; border:1px solid var(--line); background:var(--surf2); border-radius:4px; padding:10px 13px; display:flex; flex-direction:column; justify-content:center;">
                   <div style="font-family:var(--fm); font-size:19px;">{{ nightCount }}</div>
                   <div style="font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3);">Nights</div>
                 </div>
@@ -544,13 +548,13 @@
             <div style="font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:10px;">Travel mode</div>
             <div style="display:flex; flex-wrap:wrap; gap:8px;">
               <sc-for list="{{ modeChips }}" as="c" hint-placeholder-count="6">
-                <button onClick="{{ c.pick }}" style="background:{{ c.bg }}; border:1px solid {{ c.bd }}; color:{{ c.fg }}; border-radius:999px; padding:10px 18px; font-size:13.5px; font-weight:600; cursor:pointer;" style-hover="border-color:var(--line2);">{{ c.label }}</button>
+                <button onClick="{{ c.pick }}" style="background:{{ c.bg }}; border:1px solid {{ c.bd }}; color:{{ c.fg }}; border-radius:4px; padding:10px 18px; font-size:13.5px; font-weight:600; cursor:pointer;" style-hover="border-color:var(--line2);">{{ c.label }}</button>
               </sc-for>
             </div>
             <div style="font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin:24px 0 10px;">Trip type</div>
             <div style="display:flex; flex-wrap:wrap; gap:8px;">
               <sc-for list="{{ typeChips }}" as="c" hint-placeholder-count="9">
-                <button onClick="{{ c.pick }}" style="background:{{ c.bg }}; border:1px solid {{ c.bd }}; color:{{ c.fg }}; border-radius:999px; padding:9px 16px; font-size:13px; font-weight:600; cursor:pointer;" style-hover="border-color:var(--line2);">{{ c.label }}</button>
+                <button onClick="{{ c.pick }}" style="background:{{ c.bg }}; border:1px solid {{ c.bd }}; color:{{ c.fg }}; border-radius:4px; padding:9px 16px; font-size:13px; font-weight:600; cursor:pointer;" style-hover="border-color:var(--line2);">{{ c.label }}</button>
               </sc-for>
             </div>
           </sc-if>
@@ -560,12 +564,12 @@
             <p style="font-size:13.5px; color:var(--tx2); margin:6px 0 22px;">Every recommendation is filtered to this band. A hard cap makes the engine trade down rather than overshoot.</p>
             <div style="display:flex; flex-wrap:wrap; gap:8px;">
               <sc-for list="{{ budgetChips }}" as="c" hint-placeholder-count="5">
-                <button onClick="{{ c.pick }}" style="background:{{ c.bg }}; border:1px solid {{ c.bd }}; color:{{ c.fg }}; border-radius:999px; padding:10px 18px; font-size:13.5px; font-weight:600; cursor:pointer;" style-hover="border-color:var(--line2);">{{ c.label }}</button>
+                <button onClick="{{ c.pick }}" style="background:{{ c.bg }}; border:1px solid {{ c.bd }}; color:{{ c.fg }}; border-radius:4px; padding:10px 18px; font-size:13.5px; font-weight:600; cursor:pointer;" style-hover="border-color:var(--line2);">{{ c.label }}</button>
               </sc-for>
             </div>
             <div style="margin-top:22px; max-width:340px;">
               <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Maximum budget (optional)</label>
-              <input type="number" value="{{ dBudgetAmt }}" onChange="{{ onBudgetAmt }}" placeholder="60000" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+              <input type="number" value="{{ dBudgetAmt }}" onChange="{{ onBudgetAmt }}" placeholder="60000" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
               <div style="font-size:12px; color:var(--tx3); margin-top:7px;">Total for the group, in your default currency.</div>
             </div>
           </sc-if>
@@ -576,31 +580,31 @@
             <div style="font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:10px;">Interests</div>
             <div style="display:flex; flex-wrap:wrap; gap:7px;">
               <sc-for list="{{ interestChips }}" as="c" hint-placeholder-count="14">
-                <button onClick="{{ c.pick }}" style="background:{{ c.bg }}; border:1px solid {{ c.bd }}; color:{{ c.fg }}; border-radius:999px; padding:8px 15px; font-size:13px; font-weight:600; cursor:pointer;" style-hover="border-color:var(--line2);">{{ c.label }}</button>
+                <button onClick="{{ c.pick }}" style="background:{{ c.bg }}; border:1px solid {{ c.bd }}; color:{{ c.fg }}; border-radius:4px; padding:8px 15px; font-size:13px; font-weight:600; cursor:pointer;" style-hover="border-color:var(--line2);">{{ c.label }}</button>
               </sc-for>
             </div>
             <div style="font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin:24px 0 10px;">Food preference</div>
             <div style="display:flex; flex-wrap:wrap; gap:7px;">
               <sc-for list="{{ foodChips }}" as="c" hint-placeholder-count="6">
-                <button onClick="{{ c.pick }}" style="background:{{ c.bg }}; border:1px solid {{ c.bd }}; color:{{ c.fg }}; border-radius:999px; padding:8px 15px; font-size:13px; font-weight:600; cursor:pointer;">{{ c.label }}</button>
+                <button onClick="{{ c.pick }}" style="background:{{ c.bg }}; border:1px solid {{ c.bd }}; color:{{ c.fg }}; border-radius:4px; padding:8px 15px; font-size:13px; font-weight:600; cursor:pointer;">{{ c.label }}</button>
               </sc-for>
             </div>
             <div style="font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin:24px 0 10px;">Hotel preference</div>
             <div style="display:flex; flex-wrap:wrap; gap:7px;">
               <sc-for list="{{ hotelChips }}" as="c" hint-placeholder-count="8">
-                <button onClick="{{ c.pick }}" style="background:{{ c.bg }}; border:1px solid {{ c.bd }}; color:{{ c.fg }}; border-radius:999px; padding:8px 15px; font-size:13px; font-weight:600; cursor:pointer;">{{ c.label }}</button>
+                <button onClick="{{ c.pick }}" style="background:{{ c.bg }}; border:1px solid {{ c.bd }}; color:{{ c.fg }}; border-radius:4px; padding:8px 15px; font-size:13px; font-weight:600; cursor:pointer;">{{ c.label }}</button>
               </sc-for>
             </div>
             <div style="margin-top:24px;">
               <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Additional requirements</label>
-              <textarea value="{{ dReq }}" onChange="{{ onReq }}" rows="3" placeholder="Two Royal Enfield 350s. Prefer homestays with secure parking and hot water." style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; color:var(--tx); outline:none; resize:vertical;" style-focus="border-color:var(--amber);"></textarea>
+              <textarea value="{{ dReq }}" onChange="{{ onReq }}" rows="3" placeholder="Two Royal Enfield 350s. Prefer homestays with secure parking and hot water." style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none; resize:vertical;" style-focus="border-color:var(--amber);"></textarea>
             </div>
           </sc-if>
 
           <sc-if value="{{ w5 }}" hint-placeholder-val="{{ false }}">
             <div style="font-family:var(--fd); font-size:28px; letter-spacing:-.01em;">Ready to generate</div>
             <p style="font-size:13.5px; color:var(--tx2); margin:6px 0 22px;">The engine writes the trip, route, days, activities, stays, food, places, budget and packing list in one transaction.</p>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:1px; background:var(--surf2); border:1px solid var(--line); border-radius:12px; overflow:hidden;">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:1px; background:var(--surf2); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
               <div style="background:var(--surf2); padding:14px 15px; box-shadow:1px 0 0 var(--line), 0 1px 0 var(--line);">
                 <div style="font-family:var(--fm); font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--tx3);">Route</div>
                 <div style="font-size:14px; font-weight:700; margin-top:5px;">{{ dSource }} → {{ dDest }}</div>
@@ -630,11 +634,11 @@
                 <div style="font-size:14px; font-weight:700; margin-top:5px;">{{ dInterestsLabel }}</div>
               </div>
             </div>
-            <button onClick="{{ runGen }}" style="width:100%; margin-top:20px; background:var(--amber); border:none; color:#12100B; border-radius:12px; padding:17px; font-size:15.5px; font-weight:800; letter-spacing:.01em; cursor:pointer;" style-hover="filter:brightness(1.08);">✨ Generate my itinerary</button>
+            <button onClick="{{ runGen }}" style="width:100%; margin-top:20px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:17px; font-size:15.5px; font-weight:700; letter-spacing:.01em; cursor:pointer;" style-hover="opacity:.82;">Generate my itinerary</button>
           </sc-if>
 
           <sc-if value="{{ hasWizErrs }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-top:18px; border:1px solid var(--coral); background:var(--coralq); border-radius:10px; padding:12px 14px;">
+            <div style="margin-top:18px; border:1px solid var(--coral); background:var(--coralq); border-radius:4px; padding:12px 14px;">
               <div style="font-family:var(--fm); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--coral); margin-bottom:6px;">Fix before continuing</div>
               <sc-for list="{{ wizErrs }}" as="e" hint-placeholder-count="2">
                 <div style="font-size:13px; color:var(--coral);">· {{ e }}</div>
@@ -644,10 +648,10 @@
 
           <div style="display:flex; gap:10px; margin-top:22px; padding-top:20px; border-top:1px solid var(--line);">
             <sc-if value="{{ notFirstStep }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ prevStep }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx); border-radius:10px; padding:12px 20px; font-size:13.5px; font-weight:600; cursor:pointer;" style-hover="background:var(--surf2);">← Back</button>
+              <button onClick="{{ prevStep }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:12px 20px; font-size:13.5px; font-weight:600; cursor:pointer;" style-hover="background:var(--surf2);">← Back</button>
             </sc-if>
             <span style="flex:1;"></span>
-            <button onClick="{{ nextStep }}" style="background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:10px; padding:12px 22px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="background:var(--amber); color:#12100B; border-color:var(--amber);">Continue →</button>
+            <button onClick="{{ nextStep }}" style="background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:12px 22px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="background:var(--amber); color:var(--onAccent); border-color:var(--amber);">Continue →</button>
           </div>
         </div>
       </div>
@@ -662,7 +666,7 @@
         <div style="height:4px; border-radius:2px; background:var(--surf3); margin:24px 0 28px; overflow:hidden; position:relative;">
           <div style="height:100%; width:{{ genPct }}; background:var(--amber); border-radius:2px; transition:width .45s ease;"></div>
         </div>
-        <div style="border:1px solid var(--line); background:var(--surf); border-radius:16px; padding:8px 4px;">
+        <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:8px 4px;">
           <sc-for list="{{ genList }}" as="g" hint-placeholder-count="12">
             <div style="display:flex; align-items:center; gap:12px; padding:9px 18px;">
               <span style="font-family:var(--fm); font-size:13px; width:14px; color:{{ g.tint }}; animation:{{ g.anim }};">{{ g.mark }}</span>
@@ -671,7 +675,7 @@
           </sc-for>
         </div>
         <sc-if value="{{ genDone }}" hint-placeholder-val="{{ false }}">
-          <button onClick="{{ openGenerated }}" style="width:100%; margin-top:20px; background:var(--amber); border:none; color:#12100B; border-radius:12px; padding:16px; font-size:15px; font-weight:800; cursor:pointer;" style-hover="filter:brightness(1.08);">Open the itinerary →</button>
+          <button onClick="{{ openGenerated }}" style="width:100%; margin-top:20px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:16px; font-size:15px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Open the itinerary →</button>
         </sc-if>
         <sc-if value="{{ genRunning }}" hint-placeholder-val="{{ true }}">
           <p style="text-align:center; font-size:12.5px; color:var(--tx3); margin-top:18px;">Route and places come from live APIs. Anything the model estimates will be labelled in the result.</p>
@@ -682,7 +686,7 @@
       <sc-if value="{{ sItin }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:1000px; margin:0 auto; animation:cFade .3s ease both;">
 
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:13px; overflow:hidden;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
           <sc-for list="{{ bikeStats }}" as="b" hint-placeholder-count="6">
             <div style="background:var(--surf); padding:13px 14px; box-shadow:1px 0 0 var(--line), 0 1px 0 var(--line);">
               <div style="font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3);">{{ b.label }}</div>
@@ -691,34 +695,34 @@
           </sc-for>
         </div>
 
-        <div style="border:1px solid var(--line); background:var(--surf); border-radius:13px; padding:16px 17px; margin-top:12px;">
+        <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:16px 17px; margin-top:12px;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-            <div style="font-size:14px; font-weight:700;">🏍 Bike mode — edit the assumptions</div>
+            <div style="font-size:14px; font-weight:700;">Bike mode — edit the assumptions</div>
             <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--amber);">✦ Fuel figures are estimates</span>
           </div>
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:12px; margin-top:14px;">
             <div>
               <label style="display:block; font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3); margin-bottom:6px;">Mileage km/l</label>
-              <input type="number" value="{{ bikeMileage }}" onChange="{{ onMileage }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:8px; padding:9px 11px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+              <input type="number" value="{{ bikeMileage }}" onChange="{{ onMileage }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:9px 11px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
             </div>
             <div>
               <label style="display:block; font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3); margin-bottom:6px;">Fuel price /l</label>
-              <input type="number" value="{{ bikeFuelPrice }}" onChange="{{ onFuelPrice }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:8px; padding:9px 11px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+              <input type="number" value="{{ bikeFuelPrice }}" onChange="{{ onFuelPrice }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:9px 11px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
             </div>
             <div>
               <label style="display:block; font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3); margin-bottom:6px;">Tank litres</label>
-              <input type="number" value="{{ bikeTank }}" onChange="{{ onTank }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:8px; padding:9px 11px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+              <input type="number" value="{{ bikeTank }}" onChange="{{ onTank }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:9px 11px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
             </div>
             <div>
               <label style="display:block; font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3); margin-bottom:6px;">Bikes</label>
-              <input type="number" value="{{ bikeCount }}" onChange="{{ onBikes }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:8px; padding:9px 11px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+              <input type="number" value="{{ bikeCount }}" onChange="{{ onBikes }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:9px 11px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
             </div>
           </div>
         </div>
 
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:10px; margin-top:12px;">
           <sc-for list="{{ weatherDays }}" as="w" hint-placeholder-count="5">
-            <div style="border:1px solid var(--line); background:var(--surf); border-radius:12px; padding:13px 14px;">
+            <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:13px 14px;">
               <div style="display:flex; align-items:center; justify-content:space-between;">
                 <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3);">{{ w.label }}</span>
                 <span style="font-family:var(--fm); font-size:10px; color:var(--tx3);">{{ w.rain }} rain</span>
@@ -731,14 +735,14 @@
           </sc-for>
         </div>
 
-        <div style="display:flex; align-items:center; gap:9px; margin:16px 0 0; border:1px solid var(--amber); background:var(--amberq); border-radius:10px; padding:10px 13px;">
+        <div style="display:flex; align-items:center; gap:9px; margin:16px 0 0; border:1px solid var(--amber); background:var(--amberq); border-radius:4px; padding:10px 13px;">
           <span style="font-family:var(--fm); font-size:12px; color:var(--amber);">✦</span>
           <span style="font-size:12.5px; color:var(--tx2);">Weather shown is late-January climate normals for each halt, not a live forecast. The live call runs 48 hours before departure.</span>
         </div>
 
         <div style="display:flex; flex-direction:column; gap:14px; margin-top:22px;">
           <sc-for list="{{ itinDays }}" as="d" hint-placeholder-count="5">
-            <div style="border:1px solid var(--line); background:var(--surf); border-radius:16px; overflow:hidden;">
+            <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; overflow:hidden;">
               <div style="padding:17px 18px; border-bottom:1px solid var(--line); background:var(--surf2);">
                 <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap;">
                   <div style="min-width:0;">
@@ -746,7 +750,7 @@
                     <div style="font-family:var(--fd); font-size:25px; line-height:1.2; margin-top:5px;">{{ d.title }}</div>
                     <div style="font-size:12.5px; color:var(--tx3); margin-top:2px;">{{ d.location }}</div>
                   </div>
-                  <button onClick="{{ d.optimize }}" style="flex:none; background:transparent; border:1px solid var(--line2); color:var(--amber); border-radius:9px; padding:9px 14px; font-size:12.5px; font-weight:700; cursor:pointer; white-space:nowrap;" style-hover="background:var(--amberq);">{{ d.optLabel }}</button>
+                  <button onClick="{{ d.optimize }}" style="flex:none; background:transparent; border:1px solid var(--line2); color:var(--amber); border-radius:4px; padding:9px 14px; font-size:12.5px; font-weight:700; cursor:pointer; white-space:nowrap;" style-hover="background:var(--amberq);">{{ d.optLabel }}</button>
                 </div>
                 <p style="font-size:13.5px; color:var(--tx2); margin:12px 0 0; max-width:72ch;">{{ d.summary }}</p>
                 <div style="display:flex; flex-wrap:wrap; gap:16px; margin-top:14px; padding-top:13px; border-top:1px solid var(--line);">
@@ -768,7 +772,7 @@
                   </div>
                 </div>
                 <sc-if value="{{ d.hasAlert }}" hint-placeholder-val="{{ false }}">
-                  <div style="display:flex; align-items:center; gap:9px; margin-top:13px; border:1px solid var(--coral); background:var(--coralq); border-radius:9px; padding:9px 12px;">
+                  <div style="display:flex; align-items:center; gap:9px; margin-top:13px; border:1px solid var(--coral); background:var(--coralq); border-radius:4px; padding:9px 12px;">
                     <span style="font-family:var(--fm); font-size:11px; color:var(--coral);">!</span>
                     <span style="font-size:12.5px; color:var(--coral);">{{ d.wxAlert }}</span>
                   </div>
@@ -779,8 +783,8 @@
                 <sc-for list="{{ d.acts }}" as="a" hint-placeholder-count="8">
                   <div draggable="true" onDragStart="{{ a.dragStart }}" onDragOver="{{ a.dragOver }}" onDrop="{{ a.drop }}" onDragEnd="{{ a.dragEnd }}" style="display:grid; grid-template-columns:76px 20px minmax(0,1fr) auto; gap:12px; padding:11px 16px; background:{{ a.rowBg }}; opacity:{{ a.rowOpacity }}; cursor:grab; transition:background .15s;" style-hover="background:var(--surf2);">
                     <div style="display:flex; flex-direction:column; gap:3px;">
-                      <input value="{{ a.start_time }}" onChange="{{ a.onStart }}" onBlur="{{ a.commit }}" style="width:100%; background:transparent; border:1px solid transparent; border-radius:6px; padding:2px 4px; color:var(--tx); font-family:var(--fm); font-size:12.5px; outline:none;" style-focus="border-color:var(--amber); background:var(--surf2);" />
-                      <input value="{{ a.end_time }}" onChange="{{ a.onEnd }}" onBlur="{{ a.commit }}" style="width:100%; background:transparent; border:1px solid transparent; border-radius:6px; padding:2px 4px; color:var(--tx3); font-family:var(--fm); font-size:11px; outline:none;" style-focus="border-color:var(--amber); background:var(--surf2);" />
+                      <input value="{{ a.start_time }}" onChange="{{ a.onStart }}" onBlur="{{ a.commit }}" style="width:100%; background:transparent; border:1px solid transparent; border-radius:4px; padding:2px 4px; color:var(--tx); font-family:var(--fm); font-size:12.5px; outline:none;" style-focus="border-color:var(--amber); background:var(--surf2);" />
+                      <input value="{{ a.end_time }}" onChange="{{ a.onEnd }}" onBlur="{{ a.commit }}" style="width:100%; background:transparent; border:1px solid transparent; border-radius:4px; padding:2px 4px; color:var(--tx3); font-family:var(--fm); font-size:11px; outline:none;" style-focus="border-color:var(--amber); background:var(--surf2);" />
                     </div>
                     <div style="display:flex; flex-direction:column; align-items:center; align-self:stretch;">
                       <span style="width:8px; height:8px; border-radius:50%; background:{{ a.tint }}; margin-top:5px; flex:none;"></span>
@@ -789,7 +793,7 @@
                     <div style="min-width:0;">
                       <div style="display:flex; align-items:center; gap:9px; flex-wrap:wrap;">
                         <span style="font-size:14px; font-weight:700;">{{ a.activity_name }}</span>
-                        <span style="font-family:var(--fm); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:{{ a.tint }}; border:1px solid {{ a.tint }}; border-radius:999px; padding:2px 7px;">{{ a.typeLabel }}</span>
+                        <span style="font-family:var(--fm); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:{{ a.tint }}; border:1px solid {{ a.tint }}; border-radius:4px; padding:2px 7px;">{{ a.typeLabel }}</span>
                         <span style="font-family:var(--fm); font-size:9px; letter-spacing:.09em; text-transform:uppercase; color:{{ a.srcTint }};">{{ a.srcLabel }}</span>
                       </div>
                       <div style="font-size:12.5px; color:var(--tx3); margin-top:2px;">{{ a.location }} · {{ a.durLabel }} {{ a.distLabel }}</div>
@@ -798,9 +802,9 @@
                     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
                       <span style="font-family:var(--fm); font-size:12px; color:var(--tx2);">{{ a.costLabel }}</span>
                       <div style="display:flex; gap:3px;">
-                        <button onClick="{{ a.up }}" title="Move to previous day" style="background:transparent; border:1px solid var(--line); color:var(--tx3); border-radius:6px; padding:2px 6px; font-family:var(--fm); font-size:10px; cursor:pointer;" style-hover="color:var(--tx); border-color:var(--line2);">↑</button>
-                        <button onClick="{{ a.down }}" title="Move to next day" style="background:transparent; border:1px solid var(--line); color:var(--tx3); border-radius:6px; padding:2px 6px; font-family:var(--fm); font-size:10px; cursor:pointer;" style-hover="color:var(--tx); border-color:var(--line2);">↓</button>
-                        <button onClick="{{ a.del }}" title="Delete activity" style="background:transparent; border:1px solid var(--line); color:var(--tx3); border-radius:6px; padding:2px 6px; font-family:var(--fm); font-size:10px; cursor:pointer;" style-hover="color:var(--coral); border-color:var(--coral);">✕</button>
+                        <button onClick="{{ a.up }}" title="Move to previous day" style="background:transparent; border:1px solid var(--line); color:var(--tx3); border-radius:4px; padding:2px 6px; font-family:var(--fm); font-size:10px; cursor:pointer;" style-hover="color:var(--tx); border-color:var(--line2);">↑</button>
+                        <button onClick="{{ a.down }}" title="Move to next day" style="background:transparent; border:1px solid var(--line); color:var(--tx3); border-radius:4px; padding:2px 6px; font-family:var(--fm); font-size:10px; cursor:pointer;" style-hover="color:var(--tx); border-color:var(--line2);">↓</button>
+                        <button onClick="{{ a.del }}" title="Delete activity" style="background:transparent; border:1px solid var(--line); color:var(--tx3); border-radius:4px; padding:2px 6px; font-family:var(--fm); font-size:10px; cursor:pointer;" style-hover="color:var(--coral); border-color:var(--coral);">✕</button>
                       </div>
                     </div>
                   </div>
@@ -811,26 +815,26 @@
                 <div style="border-top:1px solid var(--line); background:var(--surf2); padding:16px 17px;">
                   <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:12px;">New activity</div>
                   <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:10px;">
-                    <input value="{{ draftName }}" onChange="{{ onActName }}" placeholder="Activity name" style="grid-column:1/-1; background:var(--surf); border:1px solid var(--line); border-radius:8px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
-                    <input value="{{ draftStart }}" onChange="{{ onActStart }}" placeholder="Start 09:00" style="background:var(--surf); border:1px solid var(--line); border-radius:8px; padding:10px 12px; color:var(--tx); outline:none; font-family:var(--fm);" style-focus="border-color:var(--amber);" />
-                    <input value="{{ draftEnd }}" onChange="{{ onActEnd }}" placeholder="End 10:30" style="background:var(--surf); border:1px solid var(--line); border-radius:8px; padding:10px 12px; color:var(--tx); outline:none; font-family:var(--fm);" style-focus="border-color:var(--amber);" />
-                    <select value="{{ draftType }}" onChange="{{ onActType }}" style="background:var(--surf); border:1px solid var(--line); border-radius:8px; padding:10px 12px; color:var(--tx); outline:none; cursor:pointer;">
+                    <input value="{{ draftName }}" onChange="{{ onActName }}" placeholder="Activity name" style="grid-column:1/-1; background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+                    <input value="{{ draftStart }}" onChange="{{ onActStart }}" placeholder="Start 09:00" style="background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none; font-family:var(--fm);" style-focus="border-color:var(--amber);" />
+                    <input value="{{ draftEnd }}" onChange="{{ onActEnd }}" placeholder="End 10:30" style="background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none; font-family:var(--fm);" style-focus="border-color:var(--amber);" />
+                    <select value="{{ draftType }}" onChange="{{ onActType }}" style="background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none; cursor:pointer;">
                       <sc-for list="{{ actTypes }}" as="t" hint-placeholder-count="6">
                         <option value="{{ t }}">{{ t }}</option>
                       </sc-for>
                     </select>
-                    <input value="{{ draftLoc }}" onChange="{{ onActLoc }}" placeholder="Location" style="background:var(--surf); border:1px solid var(--line); border-radius:8px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
-                    <input type="number" value="{{ draftCost }}" onChange="{{ onActCost }}" placeholder="Cost" style="background:var(--surf); border:1px solid var(--line); border-radius:8px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+                    <input value="{{ draftLoc }}" onChange="{{ onActLoc }}" placeholder="Location" style="background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+                    <input type="number" value="{{ draftCost }}" onChange="{{ onActCost }}" placeholder="Cost" style="background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
                   </div>
                   <div style="display:flex; gap:9px; margin-top:12px;">
-                    <button onClick="{{ commitAdd }}" style="background:var(--amber); border:none; color:#12100B; border-radius:8px; padding:10px 18px; font-size:13px; font-weight:700; cursor:pointer;">Add activity</button>
-                    <button onClick="{{ cancelAdd }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx2); border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
+                    <button onClick="{{ commitAdd }}" style="background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:10px 18px; font-size:13px; font-weight:700; cursor:pointer;">Add activity</button>
+                    <button onClick="{{ cancelAdd }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx2); border-radius:4px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
                   </div>
                 </div>
               </sc-if>
 
               <div style="border-top:1px solid var(--line); padding:11px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-                <button onClick="{{ d.addAct }}" style="background:transparent; border:1px dashed var(--line2); color:var(--tx2); border-radius:8px; padding:8px 14px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="color:var(--tx); border-color:var(--amber);">+ Add activity</button>
+                <button onClick="{{ d.addAct }}" style="background:transparent; border:1px dashed var(--line2); color:var(--tx2); border-radius:4px; padding:8px 14px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="color:var(--tx); border-color:var(--amber);">+ Add activity</button>
                 <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--tx3);">Drag rows to reorder · ↑↓ moves between days</span>
               </div>
             </div>
@@ -841,8 +845,8 @@
 
       <sc-if value="{{ sMap }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:1000px; margin:0 auto; animation:cFade .3s ease both;">
-        <div style="border:1px solid var(--line); background:var(--surf); border-radius:16px; overflow:hidden;">
-          <div style="position:relative; height:440px; background:repeating-radial-gradient(circle at 62% 18%, transparent 0 34px, var(--contour) 34px 35px), repeating-radial-gradient(circle at 24% 76%, transparent 0 44px, var(--contour) 44px 45px), var(--surf2);">
+        <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; overflow:hidden;">
+          <div style="position:relative; height:440px; background:var(--surf2);">
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%;">
               <polyline points="{{ mapPoly }}" fill="none" stroke="var(--amber)" stroke-width="0.5" stroke-linejoin="round" vector-effect="non-scaling-stroke" style="stroke-width:2.5px;"></polyline>
               <polyline points="{{ mapPoly }}" fill="none" stroke="var(--teal)" stroke-width="0.4" stroke-dasharray="6 10" vector-effect="non-scaling-stroke" style="stroke-width:1.5px; animation:cDash 2.4s linear infinite;"></polyline>
@@ -850,7 +854,7 @@
             <sc-for list="{{ mapPts }}" as="p" hint-placeholder-count="8">
               <div style="position:absolute; left:{{ p.left }}; top:{{ p.top }}; transform:{{ p.tf }}; display:flex; flex-direction:{{ p.dir }}; align-items:center; gap:7px; pointer-events:none;">
                 <span style="width:11px; height:11px; border-radius:50%; background:{{ p.tint }}; border:2px solid var(--bg); box-shadow:0 0 0 3px color-mix(in oklab, {{ p.tint }} 25%, transparent); flex:none;"></span>
-                <span style="background:color-mix(in oklab, var(--surf) 90%, transparent); border:1px solid var(--line); border-radius:6px; padding:3px 7px; white-space:nowrap;">
+                <span style="background:color-mix(in oklab, var(--surf) 90%, transparent); border:1px solid var(--line); border-radius:4px; padding:3px 7px; white-space:nowrap;">
                   <span style="font-size:11.5px; font-weight:700;">{{ p.name }}</span>
                   <span style="font-family:var(--fm); font-size:9px; color:var(--tx3); margin-left:5px;">{{ p.kind }}</span>
                 </span>
@@ -865,18 +869,18 @@
               <span style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--tx2);"><span style="width:8px; height:8px; border-radius:50%; background:var(--teal);"></span>Sightseeing</span>
               <span style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--tx2);"><span style="width:8px; height:8px; border-radius:50%; background:var(--tx3);"></span>Fuel / break</span>
             </div>
-            <a href="{{ mapsUrl }}" target="_blank" rel="noreferrer" style="border:1px solid var(--line2); border-radius:9px; padding:9px 15px; font-size:13px; font-weight:600; color:var(--tx);" style-hover="background:var(--surf2); text-decoration:none;">Open route in Maps ↗</a>
+            <a href="{{ mapsUrl }}" target="_blank" rel="noreferrer" style="border:1px solid var(--line2); border-radius:4px; padding:9px 15px; font-size:13px; font-weight:600; color:var(--tx);" style-hover="background:var(--surf2); text-decoration:none;">Open route in Maps ↗</a>
           </div>
         </div>
 
-        <div style="display:flex; align-items:center; gap:9px; margin-top:12px; border:1px solid var(--amber); background:var(--amberq); border-radius:10px; padding:10px 13px;">
+        <div style="display:flex; align-items:center; gap:9px; margin-top:12px; border:1px solid var(--amber); background:var(--amberq); border-radius:4px; padding:10px 13px;">
           <span style="font-family:var(--fm); font-size:12px; color:var(--amber);">✦</span>
           <span style="font-size:12.5px; color:var(--tx2);">This is a schematic projection, not a routed map. Distances and durations below are estimates until the routing API returns a polyline.</span>
         </div>
 
         <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
           <sc-for list="{{ routeLegs }}" as="r" hint-placeholder-count="5">
-            <div style="border:1px solid var(--line); background:var(--surf); border-radius:13px; padding:16px 17px;">
+            <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:16px 17px;">
               <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
                 <div style="font-size:15px; font-weight:700;">{{ r.route_order }}. {{ r.title }}</div>
                 <div style="display:flex; gap:14px; font-family:var(--fm); font-size:12px; color:var(--tx2);">
@@ -910,7 +914,7 @@
       <sc-if value="{{ sHotels }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:1060px; margin:0 auto; animation:cFade .3s ease both;">
         <sc-if value="{{ strict }}" hint-placeholder-val="{{ true }}">
-        <div style="display:flex; align-items:flex-start; gap:10px; border:1px solid var(--amber); background:var(--amberq); border-radius:12px; padding:13px 15px;">
+        <div style="display:flex; align-items:flex-start; gap:10px; border:1px solid var(--amber); background:var(--amberq); border-radius:4px; padding:13px 15px;">
           <span style="font-family:var(--fm); font-size:13px; color:var(--amber);">✦</span>
           <div>
             <div style="font-size:13.5px; font-weight:700; color:var(--amber);">AI Recommendation — Verify Before Booking</div>
@@ -929,9 +933,9 @@
               </div>
               <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(270px,1fr)); gap:12px; margin-top:14px;">
                 <sc-for list="{{ g.items }}" as="h" hint-placeholder-count="3">
-                  <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:16px 17px; display:flex; flex-direction:column;">
+                  <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:16px 17px; display:flex; flex-direction:column;">
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                      <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:{{ h.catTint }}; border:1px solid {{ h.catTint }}; border-radius:999px; padding:3px 9px;">{{ h.category }}</span>
+                      <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:{{ h.catTint }}; border:1px solid {{ h.catTint }}; border-radius:4px; padding:3px 9px;">{{ h.category }}</span>
                       <span style="font-family:var(--fm); font-size:9.5px; color:var(--amber);">✦ Unverified</span>
                     </div>
                     <div style="font-size:15px; font-weight:700; margin-top:12px; line-height:1.35;">{{ h.hotel_name }}</div>
@@ -943,8 +947,8 @@
                     <div style="font-size:12px; color:var(--tx2); margin-top:10px;">{{ h.facilitiesLabel }}</div>
                     <div style="font-size:12.5px; color:var(--tx2); margin-top:10px; padding-top:10px; border-top:1px solid var(--line); flex:1;">{{ h.note }}</div>
                     <div style="display:flex; gap:8px; margin-top:13px;">
-                      <button onClick="{{ h.search }}" style="flex:1; background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:8px; padding:9px; font-size:12.5px; font-weight:700; cursor:pointer;" style-hover="background:var(--amber); color:#12100B; border-color:var(--amber);">Find & verify</button>
-                      <button onClick="{{ h.save }}" style="background:transparent; border:1px solid var(--line); color:var(--tx2); border-radius:8px; padding:9px 13px; font-size:12.5px; cursor:pointer;" style-hover="color:var(--tx); border-color:var(--line2);">Save</button>
+                      <button onClick="{{ h.search }}" style="flex:1; background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:9px; font-size:12.5px; font-weight:700; cursor:pointer;" style-hover="background:var(--amber); color:var(--onAccent); border-color:var(--amber);">Find & verify</button>
+                      <button onClick="{{ h.save }}" style="background:transparent; border:1px solid var(--line); color:var(--tx2); border-radius:4px; padding:9px 13px; font-size:12.5px; cursor:pointer;" style-hover="color:var(--tx); border-color:var(--line2);">Save</button>
                     </div>
                   </div>
                 </sc-for>
@@ -957,7 +961,7 @@
 
       <sc-if value="{{ sFood }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:1060px; margin:0 auto; animation:cFade .3s ease both;">
-        <div style="display:flex; align-items:flex-start; gap:10px; border:1px solid var(--amber); background:var(--amberq); border-radius:12px; padding:13px 15px;">
+        <div style="display:flex; align-items:flex-start; gap:10px; border:1px solid var(--amber); background:var(--amberq); border-radius:4px; padding:13px 15px;">
           <span style="font-family:var(--fm); font-size:13px; color:var(--amber);">✦</span>
           <div>
             <div style="font-size:13.5px; font-weight:700; color:var(--amber);">AI Recommendation — Verify Before Booking</div>
@@ -973,7 +977,7 @@
               </div>
               <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:12px; margin-top:13px;">
                 <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="2">
-                  <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:16px 17px;">
+                  <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:16px 17px;">
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
                       <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--coral);">{{ r.cuisine }}</span>
                       <span style="font-family:var(--fm); font-size:9.5px; color:var(--amber);">✦ Unverified</span>
@@ -991,7 +995,7 @@
                       </div>
                     </div>
                     <div style="font-size:12.5px; color:var(--tx2); margin-top:11px;"><span style="color:var(--tx3);">Look for:</span> {{ r.dishes }}</div>
-                    <button onClick="{{ r.save }}" style="margin-top:13px; background:transparent; border:1px solid var(--line2); color:var(--tx2); border-radius:8px; padding:8px 14px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="color:var(--tx);">Save to places</button>
+                    <button onClick="{{ r.save }}" style="margin-top:13px; background:transparent; border:1px solid var(--line2); color:var(--tx2); border-radius:4px; padding:8px 14px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="color:var(--tx);">Save to places</button>
                   </div>
                 </sc-for>
               </div>
@@ -1003,13 +1007,13 @@
 
       <sc-if value="{{ sSee }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:1060px; margin:0 auto; animation:cFade .3s ease both;">
-        <div style="border:1px solid var(--teal); background:repeating-radial-gradient(circle at 95% 0%, transparent 0 38px, var(--contour) 38px 39px), var(--surf); border-radius:14px; padding:20px;">
+        <div style="border:1px solid var(--teal); background:var(--surf); border-radius:4px; padding:20px;">
           <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--teal);">Photography mode active</span>
           </div>
           <div style="font-family:var(--fd); font-size:26px; margin-top:7px;">Light schedule for this trip</div>
           <p style="font-size:13px; color:var(--tx2); margin:6px 0 0; max-width:64ch;">Your trip type is Photography, so the engine placed sightseeing around light rather than convenience. Times below are computed from the date and location.</p>
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); gap:1px; background:var(--surf2); border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-top:16px;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); gap:1px; background:var(--surf2); border:1px solid var(--line); border-radius:4px; overflow:hidden; margin-top:16px;">
             <sc-for list="{{ photoSpots }}" as="p" hint-placeholder-count="6">
               <div style="background:var(--surf2); padding:14px 15px; box-shadow:1px 0 0 var(--line), 0 1px 0 var(--line);">
                 <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal);">{{ p.kind }}</div>
@@ -1023,18 +1027,18 @@
 
         <div style="display:flex; flex-direction:column; gap:11px; margin-top:22px;">
           <sc-for list="{{ sightList }}" as="x" hint-placeholder-count="6">
-            <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:17px 18px;">
+            <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:17px 18px;">
               <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap;">
                 <div style="min-width:0;">
                   <div style="display:flex; align-items:center; gap:9px; flex-wrap:wrap;">
                     <span style="font-size:16px; font-weight:700;">{{ x.name }}</span>
-                    <span style="font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:{{ x.priTint }}; border:1px solid {{ x.priTint }}; border-radius:999px; padding:2px 8px;">{{ x.priority }}</span>
+                    <span style="font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:{{ x.priTint }}; border:1px solid {{ x.priTint }}; border-radius:4px; padding:2px 8px;">{{ x.priority }}</span>
                     <span style="font-family:var(--fm); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:{{ x.srcTint }};">{{ x.srcLabel }}</span>
                   </div>
                   <div style="font-size:12.5px; color:var(--tx3); margin-top:3px;">{{ x.category }} · {{ x.location }}</div>
                   <p style="font-size:13.5px; color:var(--tx2); margin:9px 0 0; max-width:72ch;">{{ x.description }}</p>
                 </div>
-                <button onClick="{{ x.save }}" style="flex:none; background:transparent; border:1px solid var(--line2); color:var(--tx2); border-radius:8px; padding:8px 14px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="color:var(--tx);">Save</button>
+                <button onClick="{{ x.save }}" style="flex:none; background:transparent; border:1px solid var(--line2); color:var(--tx2); border-radius:4px; padding:8px 14px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="color:var(--tx);">Save</button>
               </div>
               <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px; margin-top:14px; padding-top:13px; border-top:1px solid var(--line);">
                 <div>
@@ -1062,7 +1066,7 @@
 
       <sc-if value="{{ sBudget }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:1000px; margin:0 auto; animation:cFade .3s ease both;">
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:13px; overflow:hidden;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
           <sc-for list="{{ budgetTotals }}" as="t" hint-placeholder-count="4">
             <div style="background:var(--surf); padding:16px 17px; box-shadow:1px 0 0 var(--line), 0 1px 0 var(--line);">
               <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--tx3);">{{ t.label }}</div>
@@ -1072,14 +1076,14 @@
         </div>
 
         <sc-if value="{{ overBudget }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex; align-items:center; gap:10px; margin-top:12px; border:1px solid var(--coral); background:var(--coralq); border-radius:11px; padding:12px 14px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-top:12px; border:1px solid var(--coral); background:var(--coralq); border-radius:4px; padding:12px 14px;">
             <span style="font-family:var(--fm); font-size:12px; color:var(--coral);">!</span>
             <span style="font-size:13px; color:var(--coral);">{{ budgetWarning }}</span>
           </div>
         </sc-if>
 
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(290px,1fr)); gap:14px; margin-top:14px;">
-          <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:20px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+          <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:20px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
             <div style="width:190px; height:190px; border-radius:50%; background:{{ donut }}; display:flex; align-items:center; justify-content:center; position:relative;">
               <div style="width:124px; height:124px; border-radius:50%; background:var(--surf); display:flex; flex-direction:column; align-items:center; justify-content:center;">
                 <span style="font-family:var(--fm); font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--tx3);">Estimate</span>
@@ -1087,7 +1091,7 @@
               </div>
             </div>
           </div>
-          <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:18px;">
+          <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:18px;">
             <div style="font-size:14.5px; font-weight:700; margin-bottom:14px;">Where the money goes</div>
             <div style="display:flex; flex-direction:column; gap:9px;">
               <sc-for list="{{ budgetLegend }}" as="l" hint-placeholder-count="9">
@@ -1102,7 +1106,7 @@
           </div>
         </div>
 
-        <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; margin-top:14px; overflow:hidden;">
+        <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; margin-top:14px; overflow:hidden;">
           <div style="padding:15px 17px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
             <span style="font-size:14.5px; font-weight:700;">Editable estimate</span>
             <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--tx3);">Change a number — totals recalculate and save</span>
@@ -1117,7 +1121,7 @@
                 </div>
               </div>
               <span style="font-family:var(--fm); font-size:11.5px; color:var(--tx3); text-align:right;">{{ r.pctLabel }}</span>
-              <input type="number" value="{{ r.estLabel }}" onChange="{{ r.onEst }}" onBlur="{{ r.commit }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:8px; padding:8px 10px; color:var(--tx); font-family:var(--fm); font-size:13px; text-align:right; outline:none;" style-focus="border-color:var(--amber);" />
+              <input type="number" value="{{ r.estLabel }}" onChange="{{ r.onEst }}" onBlur="{{ r.commit }}" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:8px 10px; color:var(--tx); font-family:var(--fm); font-size:13px; text-align:right; outline:none;" style-focus="border-color:var(--amber);" />
             </div>
           </sc-for>
         </div>
@@ -1126,7 +1130,7 @@
 
       <sc-if value="{{ sExp }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:1000px; margin:0 auto; animation:cFade .3s ease both;">
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:13px; overflow:hidden;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
           <sc-for list="{{ expTotals }}" as="t" hint-placeholder-count="4">
             <div style="background:var(--surf); padding:16px 17px; box-shadow:1px 0 0 var(--line), 0 1px 0 var(--line);">
               <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--tx3);">{{ t.label }}</div>
@@ -1136,37 +1140,37 @@
         </div>
 
         <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
-          <button onClick="{{ startExp }}" style="background:var(--amber); border:none; color:#12100B; border-radius:9px; padding:11px 18px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="filter:brightness(1.08);">+ Record an expense</button>
+          <button onClick="{{ startExp }}" style="background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:11px 18px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">+ Record an expense</button>
           <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--tx3); align-self:center;">Estimated vs actual, per category</span>
         </div>
 
         <sc-if value="{{ hasExpForm }}" hint-placeholder-val="{{ false }}">
-          <div style="border:1px solid var(--amber); background:var(--surf); border-radius:14px; padding:18px; margin-top:14px;">
+          <div style="border:1px solid var(--amber); background:var(--surf); border-radius:4px; padding:18px; margin-top:14px;">
             <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--amber); margin-bottom:13px;">New expense</div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:11px;">
-              <select value="{{ fCat }}" onChange="{{ onExpCat }}" style="background:var(--surf2); border:1px solid var(--line); border-radius:9px; padding:10px 12px; color:var(--tx); outline:none; cursor:pointer;">
+              <select value="{{ fCat }}" onChange="{{ onExpCat }}" style="background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none; cursor:pointer;">
                 <sc-for list="{{ expCats }}" as="c" hint-placeholder-count="11">
                   <option value="{{ c }}">{{ c }}</option>
                 </sc-for>
               </select>
-              <input value="{{ fDesc }}" onChange="{{ onExpDesc }}" placeholder="Description" style="background:var(--surf2); border:1px solid var(--line); border-radius:9px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
-              <input type="number" value="{{ fAmt }}" onChange="{{ onExpAmt }}" placeholder="Amount" style="background:var(--surf2); border:1px solid var(--line); border-radius:9px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
-              <input type="date" value="{{ fDate }}" onChange="{{ onExpDate }}" style="background:var(--surf2); border:1px solid var(--line); border-radius:9px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
-              <select value="{{ fPay }}" onChange="{{ onExpPay }}" style="background:var(--surf2); border:1px solid var(--line); border-radius:9px; padding:10px 12px; color:var(--tx); outline:none; cursor:pointer;">
+              <input value="{{ fDesc }}" onChange="{{ onExpDesc }}" placeholder="Description" style="background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+              <input type="number" value="{{ fAmt }}" onChange="{{ onExpAmt }}" placeholder="Amount" style="background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+              <input type="date" value="{{ fDate }}" onChange="{{ onExpDate }}" style="background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+              <select value="{{ fPay }}" onChange="{{ onExpPay }}" style="background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none; cursor:pointer;">
                 <sc-for list="{{ payMethods }}" as="p" hint-placeholder-count="4">
                   <option value="{{ p }}">{{ p }}</option>
                 </sc-for>
               </select>
-              <input value="{{ fNotes }}" onChange="{{ onExpNotes }}" placeholder="Notes (optional)" style="background:var(--surf2); border:1px solid var(--line); border-radius:9px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+              <input value="{{ fNotes }}" onChange="{{ onExpNotes }}" placeholder="Notes (optional)" style="background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
             </div>
             <div style="display:flex; gap:9px; margin-top:13px;">
-              <button onClick="{{ commitExp }}" style="background:var(--amber); border:none; color:#12100B; border-radius:8px; padding:10px 18px; font-size:13px; font-weight:700; cursor:pointer;">Save expense</button>
-              <button onClick="{{ cancelExp }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx2); border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
+              <button onClick="{{ commitExp }}" style="background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:10px 18px; font-size:13px; font-weight:700; cursor:pointer;">Save expense</button>
+              <button onClick="{{ cancelExp }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx2); border-radius:4px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
             </div>
           </div>
         </sc-if>
 
-        <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; margin-top:14px; overflow:hidden;">
+        <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; margin-top:14px; overflow:hidden;">
           <div style="display:grid; grid-template-columns:minmax(0,1fr) 110px 110px 90px 40px; gap:10px; padding:12px 17px; border-bottom:1px solid var(--line); background:var(--surf2); font-family:var(--fm); font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--tx3);">
             <span>Category</span><span style="text-align:right;">Estimated</span><span style="text-align:right;">Actual</span><span style="text-align:right;">Delta</span><span></span>
           </div>
@@ -1181,9 +1185,9 @@
                 </div>
               </div>
               <span style="font-family:var(--fm); font-size:12.5px; color:var(--tx2); text-align:right;">{{ e.estLabel }}</span>
-              <input type="number" value="{{ e.actValue }}" onChange="{{ e.onActual }}" onBlur="{{ e.commit }}" placeholder="—" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:7px; padding:6px 9px; color:var(--tx); font-family:var(--fm); font-size:12.5px; text-align:right; outline:none;" style-focus="border-color:var(--amber);" />
+              <input type="number" value="{{ e.actValue }}" onChange="{{ e.onActual }}" onBlur="{{ e.commit }}" placeholder="—" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:6px 9px; color:var(--tx); font-family:var(--fm); font-size:12.5px; text-align:right; outline:none;" style-focus="border-color:var(--amber);" />
               <span style="font-family:var(--fm); font-size:12px; color:{{ e.diffTint }}; text-align:right;">{{ e.diffLabel }}</span>
-              <button onClick="{{ e.del }}" style="background:transparent; border:1px solid var(--line); color:var(--tx3); border-radius:6px; padding:3px 7px; font-family:var(--fm); font-size:10px; cursor:pointer;" style-hover="color:var(--coral); border-color:var(--coral);">✕</button>
+              <button onClick="{{ e.del }}" style="background:transparent; border:1px solid var(--line); color:var(--tx3); border-radius:4px; padding:3px 7px; font-family:var(--fm); font-size:10px; cursor:pointer;" style-hover="color:var(--coral); border-color:var(--coral);">✕</button>
             </div>
           </sc-for>
         </div>
@@ -1192,7 +1196,7 @@
 
       <sc-if value="{{ sPack }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:940px; margin:0 auto; animation:cFade .3s ease both;">
-        <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:18px;">
+        <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:18px;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
             <span style="font-size:15px; font-weight:700;">Packing list</span>
             <span style="font-family:var(--fm); font-size:12px; color:var(--amber);">{{ packProgress }}</span>
@@ -1201,14 +1205,14 @@
             <div style="height:100%; width:{{ packPct }}; background:var(--amber); border-radius:3px; transition:width .3s ease;"></div>
           </div>
           <div style="display:flex; gap:9px; margin-top:14px;">
-            <input value="{{ newPack }}" onChange="{{ onNewPack }}" placeholder="Add an item…" style="flex:1; background:var(--surf2); border:1px solid var(--line); border-radius:9px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
-            <button onClick="{{ addPack }}" style="background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:9px; padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer;" style-hover="background:var(--amber); color:#12100B;">Add</button>
+            <input value="{{ newPack }}" onChange="{{ onNewPack }}" placeholder="Add an item…" style="flex:1; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+            <button onClick="{{ addPack }}" style="background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer;" style-hover="background:var(--amber); color:var(--onAccent);">Add</button>
           </div>
         </div>
 
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(270px,1fr)); gap:12px; margin-top:14px;">
           <sc-for list="{{ packCats }}" as="c" hint-placeholder-count="7">
-            <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; overflow:hidden;">
+            <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; overflow:hidden;">
               <div style="display:flex; align-items:center; justify-content:space-between; padding:13px 15px; border-bottom:1px solid var(--line); background:var(--surf2);">
                 <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3);">{{ c.cat }}</span>
                 <span style="font-family:var(--fm); font-size:11px; color:var(--teal);">{{ c.count }}</span>
@@ -1216,7 +1220,7 @@
               <div style="padding:5px 0;">
                 <sc-for list="{{ c.items }}" as="i" hint-placeholder-count="4">
                   <div style="display:flex; align-items:center; gap:11px; padding:8px 15px;" style-hover="background:var(--surf2);">
-                    <button onClick="{{ i.toggle }}" style="width:18px; height:18px; flex:none; border-radius:5px; border:1.5px solid {{ i.bd }}; background:{{ i.bg }}; color:#12100B; font-size:11px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">{{ i.mark }}</button>
+                    <button onClick="{{ i.toggle }}" style="width:18px; height:18px; flex:none; border-radius:4px; border:1.5px solid {{ i.bd }}; background:{{ i.bg }}; color:var(--onAccent); font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">{{ i.mark }}</button>
                     <span style="flex:1; font-size:13.5px; color:{{ i.fg }}; text-decoration:{{ i.deco }};">{{ i.item_name }}</span>
                     <span style="font-family:var(--fm); font-size:11px; color:var(--tx3);">{{ i.qtyLabel }}</span>
                     <button onClick="{{ i.del }}" style="background:transparent; border:none; color:var(--tx3); font-family:var(--fm); font-size:11px; cursor:pointer; padding:2px 4px;" style-hover="color:var(--coral);">✕</button>
@@ -1227,7 +1231,7 @@
           </sc-for>
         </div>
 
-        <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; margin-top:20px; overflow:hidden;">
+        <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; margin-top:20px; overflow:hidden;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 17px; border-bottom:1px solid var(--line);">
             <span style="font-size:15px; font-weight:700;">Pre-trip checklist</span>
             <span style="font-family:var(--fm); font-size:12px; color:var(--teal);">{{ checkProgress }}</span>
@@ -1238,14 +1242,14 @@
           <div style="padding:6px 0;">
             <sc-for list="{{ checkItems }}" as="c" hint-placeholder-count="9">
               <div style="display:flex; align-items:center; gap:12px; padding:10px 17px;" style-hover="background:var(--surf2);">
-                <button onClick="{{ c.toggle }}" style="width:19px; height:19px; flex:none; border-radius:5px; border:1.5px solid {{ c.bd }}; background:{{ c.bg }}; color:#12100B; font-size:11px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">{{ c.mark }}</button>
+                <button onClick="{{ c.toggle }}" style="width:19px; height:19px; flex:none; border-radius:4px; border:1.5px solid {{ c.bd }}; background:{{ c.bg }}; color:var(--onAccent); font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">{{ c.mark }}</button>
                 <span style="flex:1; font-size:13.5px; color:{{ c.fg }}; text-decoration:{{ c.deco }};">{{ c.label }}</span>
               </div>
             </sc-for>
           </div>
           <div style="display:flex; gap:9px; padding:13px 17px; border-top:1px solid var(--line);">
-            <input value="{{ newCheck }}" onChange="{{ onNewCheck }}" placeholder="Add your own checklist item…" style="flex:1; background:var(--surf2); border:1px solid var(--line); border-radius:9px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--teal);" />
-            <button onClick="{{ addCheck }}" style="background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:9px; padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer;" style-hover="background:var(--teal); color:#0C1410;">Add</button>
+            <input value="{{ newCheck }}" onChange="{{ onNewCheck }}" placeholder="Add your own checklist item…" style="flex:1; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:10px 12px; color:var(--tx); outline:none;" style-focus="border-color:var(--teal);" />
+            <button onClick="{{ addCheck }}" style="background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer;" style-hover="background:var(--teal); color:var(--onAccent);">Add</button>
           </div>
         </div>
       </div>
@@ -1255,14 +1259,14 @@
       <div style="max-width:1000px; margin:0 auto; animation:cFade .3s ease both;">
         <div style="display:flex; flex-wrap:wrap; gap:8px;">
           <sc-for list="{{ placeFilters }}" as="f" hint-placeholder-count="5">
-            <button onClick="{{ f.pick }}" style="background:{{ f.bg }}; border:1px solid {{ f.bd }}; color:{{ f.fg }}; border-radius:999px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer;">{{ f.label }}</button>
+            <button onClick="{{ f.pick }}" style="background:{{ f.bg }}; border:1px solid {{ f.bd }}; color:{{ f.fg }}; border-radius:4px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer;">{{ f.label }}</button>
           </sc-for>
         </div>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:12px; margin-top:18px;">
           <sc-for list="{{ placeList }}" as="p" hint-placeholder-count="5">
-            <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:16px 17px;">
+            <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:16px 17px;">
               <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:{{ p.tint }}; border:1px solid {{ p.tint }}; border-radius:999px; padding:3px 9px;">{{ p.place_type }}</span>
+                <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:{{ p.tint }}; border:1px solid {{ p.tint }}; border-radius:4px; padding:3px 9px;">{{ p.place_type }}</span>
                 <button onClick="{{ p.del }}" style="background:transparent; border:none; color:var(--tx3); font-family:var(--fm); font-size:11px; cursor:pointer;" style-hover="color:var(--coral);">✕</button>
               </div>
               <div style="font-size:15px; font-weight:700; margin-top:12px; line-height:1.35;">{{ p.name }}</div>
@@ -1272,7 +1276,7 @@
           </sc-for>
         </div>
         <sc-if value="{{ noPlaces }}" hint-placeholder-val="{{ false }}">
-          <div style="border:1px dashed var(--line2); border-radius:15px; padding:44px 20px; text-align:center; margin-top:18px;">
+          <div style="border:1px dashed var(--line2); border-radius:4px; padding:44px 20px; text-align:center; margin-top:18px;">
             <div style="font-family:var(--fd); font-size:24px;">Nothing saved in this category yet</div>
             <p style="font-size:13.5px; color:var(--tx2); margin:8px 0 0;">Save stays, restaurants and viewpoints from any trip and they collect here against your account.</p>
           </div>
@@ -1282,11 +1286,11 @@
 
       <sc-if value="{{ sChat }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:800px; margin:0 auto; animation:cFade .3s ease both; display:flex; flex-direction:column; gap:14px;">
-        <div style="border:1px solid var(--line); background:var(--surf); border-radius:16px; padding:18px; display:flex; flex-direction:column; gap:14px; min-height:380px;">
+        <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:18px; display:flex; flex-direction:column; gap:14px; min-height:380px;">
           <sc-for list="{{ chat }}" as="m" hint-placeholder-count="2">
             <div style="display:flex; flex-direction:column; align-items:{{ m.align }}; gap:4px;">
               <span style="font-family:var(--fm); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:{{ m.whoTint }};">{{ m.who }}</span>
-              <div style="max-width:84%; background:{{ m.bg }}; border:1px solid {{ m.bd }}; border-radius:13px; padding:12px 15px; font-size:14px; line-height:1.6;">{{ m.text }}</div>
+              <div style="max-width:84%; background:{{ m.bg }}; border:1px solid {{ m.bd }}; border-radius:4px; padding:12px 15px; font-size:14px; line-height:1.6;">{{ m.text }}</div>
             </div>
           </sc-for>
           <sc-if value="{{ chatBusy }}" hint-placeholder-val="{{ false }}">
@@ -1299,13 +1303,13 @@
 
         <div style="display:flex; flex-wrap:wrap; gap:7px;">
           <sc-for list="{{ quickPrompts }}" as="q" hint-placeholder-count="6">
-            <button onClick="{{ q.run }}" style="background:var(--surf); border:1px solid var(--line); color:var(--tx2); border-radius:999px; padding:8px 14px; font-size:12.5px; cursor:pointer;" style-hover="border-color:var(--amber); color:var(--tx);">{{ q.label }}</button>
+            <button onClick="{{ q.run }}" style="background:var(--surf); border:1px solid var(--line); color:var(--tx2); border-radius:4px; padding:8px 14px; font-size:12.5px; cursor:pointer;" style-hover="border-color:var(--amber); color:var(--tx);">{{ q.label }}</button>
           </sc-for>
         </div>
 
         <div style="display:flex; gap:10px; align-items:flex-end;">
-          <textarea value="{{ chatInput }}" onChange="{{ onChatInput }}" onKeyDown="{{ chatKey }}" rows="2" placeholder="Make day 2 less tiring…" style="flex:1; background:var(--surf); border:1px solid var(--line); border-radius:12px; padding:12px 14px; color:var(--tx); outline:none; resize:none;" style-focus="border-color:var(--amber);"></textarea>
-          <button onClick="{{ sendChat }}" style="background:var(--amber); border:none; color:#12100B; border-radius:12px; padding:14px 22px; font-size:14px; font-weight:700; cursor:pointer;" style-hover="filter:brightness(1.08);">Send</button>
+          <textarea value="{{ chatInput }}" onChange="{{ onChatInput }}" onKeyDown="{{ chatKey }}" rows="2" placeholder="Make day 2 less tiring…" style="flex:1; background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none; resize:none;" style-focus="border-color:var(--amber);"></textarea>
+          <button onClick="{{ sendChat }}" style="background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:14px 22px; font-size:14px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Send</button>
         </div>
         <p style="font-size:12px; color:var(--tx3); margin:0;">The assistant edits the trip record directly — reorders, swaps, adds and removes — and every change is written back and recalculated.</p>
       </div>
@@ -1313,16 +1317,16 @@
 
       <sc-if value="{{ sProfile }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:940px; margin:0 auto; animation:cFade .3s ease both; display:flex; flex-direction:column; gap:14px;">
-        <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:20px; display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+        <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:20px; display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
           <div style="width:64px; height:64px; flex:none; border-radius:50%; background:var(--amberq); border:1px solid var(--amber); color:var(--amber); display:flex; align-items:center; justify-content:center; font-family:var(--fm); font-size:22px; font-weight:700;">{{ profileInitials }}</div>
           <div style="flex:1; min-width:180px;">
             <div style="font-family:var(--fd); font-size:26px;">{{ profileName }}</div>
             <div style="font-size:13px; color:var(--tx3);">{{ profileEmail }} · {{ profilePhone }}</div>
           </div>
-          <button style="background:transparent; border:1px solid var(--line2); color:var(--tx); border-radius:9px; padding:10px 16px; font-size:13px; font-weight:600; cursor:pointer;" style-hover="background:var(--surf2);">Edit profile</button>
+          <button style="background:transparent; border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:10px 16px; font-size:13px; font-weight:600; cursor:pointer;" style-hover="background:var(--surf2);">Edit profile</button>
         </div>
 
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:14px; overflow:hidden;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
           <sc-for list="{{ prefRows }}" as="p" hint-placeholder-count="4">
             <div style="background:var(--surf); padding:15px 16px; box-shadow:1px 0 0 var(--line), 0 1px 0 var(--line);">
               <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--tx3);">{{ p.label }}</div>
@@ -1331,47 +1335,47 @@
           </sc-for>
         </div>
 
-        <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:18px;">
+        <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:18px;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
             <div>
               <div style="font-size:15px; font-weight:700;">Share this trip</div>
               <div style="font-size:12.5px; color:var(--tx2); margin-top:3px;">A read-only link. Your email, phone and account details are never exposed.</div>
             </div>
-            <button onClick="{{ toggleShare }}" style="background:{{ shareBtnBg }}; border:1px solid var(--line2); color:var(--tx); border-radius:9px; padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer;" style-hover="border-color:var(--amber);">{{ shareBtnLabel }}</button>
+            <button onClick="{{ toggleShare }}" style="background:{{ shareBtnBg }}; border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer;" style-hover="border-color:var(--amber);">{{ shareBtnLabel }}</button>
           </div>
           <sc-if value="{{ shareOn }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; gap:9px; margin-top:14px; flex-wrap:wrap; align-items:center;">
-              <code style="flex:1; min-width:220px; background:var(--surf2); border:1px solid var(--line); border-radius:9px; padding:11px 13px; font-family:var(--fm); font-size:12.5px; color:var(--teal); overflow:hidden; text-overflow:ellipsis;">{{ shareUrl }}</code>
-              <button onClick="{{ copyShare }}" style="background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:9px; padding:11px 16px; font-size:13px; font-weight:600; cursor:pointer;" style-hover="background:var(--amber); color:#12100B;">Copy</button>
-              <button onClick="{{ regenShare }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx2); border-radius:9px; padding:11px 16px; font-size:13px; cursor:pointer;" style-hover="color:var(--tx);">Regenerate</button>
+              <code style="flex:1; min-width:220px; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:11px 13px; font-family:var(--fm); font-size:12.5px; color:var(--teal); overflow:hidden; text-overflow:ellipsis;">{{ shareUrl }}</code>
+              <button onClick="{{ copyShare }}" style="background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:11px 16px; font-size:13px; font-weight:600; cursor:pointer;" style-hover="background:var(--amber); color:var(--onAccent);">Copy</button>
+              <button onClick="{{ regenShare }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx2); border-radius:4px; padding:11px 16px; font-size:13px; cursor:pointer;" style-hover="color:var(--tx);">Regenerate</button>
             </div>
           </sc-if>
         </div>
 
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:14px;">
-          <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:18px;">
+          <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:18px;">
             <div style="font-size:15px; font-weight:700;">Export as PDF</div>
             <div style="font-size:12.5px; color:var(--tx2); margin-top:3px;">Rendered server-side from the saved trip record.</div>
             <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:13px;">
               <sc-for list="{{ pdfSections }}" as="p" hint-placeholder-count="11">
-                <span style="font-family:var(--fm); font-size:10px; border:1px solid var(--line); border-radius:999px; padding:4px 10px; color:var(--tx3);">{{ p }}</span>
+                <span style="font-family:var(--fm); font-size:10px; border:1px solid var(--line); border-radius:4px; padding:4px 10px; color:var(--tx3);">{{ p }}</span>
               </sc-for>
             </div>
-            <button onClick="{{ exportPdf }}" style="width:100%; margin-top:15px; background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:9px; padding:11px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="background:var(--amber); color:#12100B; border-color:var(--amber);">Generate PDF</button>
+            <button onClick="{{ exportPdf }}" style="width:100%; margin-top:15px; background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:11px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="background:var(--amber); color:var(--onAccent); border-color:var(--amber);">Generate PDF</button>
           </div>
-          <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:18px;">
+          <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:18px;">
             <div style="font-size:15px; font-weight:700;">Export as Excel</div>
             <div style="font-size:12.5px; color:var(--tx2); margin-top:3px;">Nine sheets, one per module.</div>
             <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:13px;">
               <sc-for list="{{ xlsSheets }}" as="x" hint-placeholder-count="9">
-                <span style="font-family:var(--fm); font-size:10px; border:1px solid var(--line); border-radius:999px; padding:4px 10px; color:var(--tx3);">{{ x }}</span>
+                <span style="font-family:var(--fm); font-size:10px; border:1px solid var(--line); border-radius:4px; padding:4px 10px; color:var(--tx3);">{{ x }}</span>
               </sc-for>
             </div>
-            <button onClick="{{ exportXls }}" style="width:100%; margin-top:15px; background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:9px; padding:11px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="background:var(--teal); color:#0C1410; border-color:var(--teal);">Generate workbook</button>
+            <button onClick="{{ exportXls }}" style="width:100%; margin-top:15px; background:var(--surf3); border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:11px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="background:var(--teal); color:var(--onAccent); border-color:var(--teal);">Generate workbook</button>
           </div>
         </div>
 
-        <div style="border:1px solid var(--line2); background:var(--surf2); border-radius:14px; padding:18px;">
+        <div style="border:1px solid var(--line2); background:var(--surf2); border-radius:4px; padding:18px;">
           <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3);">About this build</div>
           <div style="font-size:13.5px; color:var(--tx2); margin-top:9px; line-height:1.65;">This is the design prototype. Its data layer is shaped exactly like the production schema — the same tables, columns and relationships — and every mutation goes through a single service call, so swapping the in-memory store for the Supabase client is a one-file change. Nothing here is persisted to browser storage as a source of truth. The schema, RLS policies and API contract ship alongside this file.</div>
         </div>
@@ -1380,7 +1384,7 @@
 
       <sc-if value="{{ sAdmin }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:1000px; margin:0 auto; animation:cFade .3s ease both;">
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:13px; overflow:hidden;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
           <sc-for list="{{ adminStats }}" as="a" hint-placeholder-count="4">
             <div style="background:var(--surf); padding:16px 17px; box-shadow:1px 0 0 var(--line), 0 1px 0 var(--line);">
               <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--tx3);">{{ a.label }}</div>
@@ -1390,7 +1394,7 @@
           </sc-for>
         </div>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(290px,1fr)); gap:14px; margin-top:14px;">
-          <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:18px;">
+          <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:18px;">
             <div style="font-size:14.5px; font-weight:700;">Popular destinations</div>
             <div style="display:flex; flex-direction:column; gap:12px; margin-top:16px;">
               <sc-for list="{{ adminDest }}" as="d" hint-placeholder-count="5">
@@ -1406,7 +1410,7 @@
               </sc-for>
             </div>
           </div>
-          <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; padding:18px;">
+          <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:18px;">
             <div style="font-size:14.5px; font-weight:700;">Travel modes</div>
             <div style="display:flex; flex-direction:column; gap:12px; margin-top:16px;">
               <sc-for list="{{ adminModes }}" as="m" hint-placeholder-count="6">
@@ -1423,7 +1427,7 @@
             </div>
           </div>
         </div>
-        <div style="border:1px solid var(--line); background:var(--surf); border-radius:14px; margin-top:14px; overflow:hidden;">
+        <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; margin-top:14px; overflow:hidden;">
           <div style="display:grid; grid-template-columns:minmax(0,1fr) 100px 120px 80px; gap:10px; padding:12px 17px; border-bottom:1px solid var(--line); background:var(--surf2); font-family:var(--fm); font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--tx3);">
             <span>External API</span><span style="text-align:right;">Calls (30d)</span><span style="text-align:right;">Cache</span><span style="text-align:right;">Errors</span>
           </div>
@@ -1443,7 +1447,7 @@
   </main>
 
   <sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}">
-  <div style="position:fixed; bottom:0; left:0; right:0; z-index:40; display:grid; grid-template-columns:repeat(5,1fr); background:color-mix(in oklab, var(--surf) 94%, transparent); backdrop-filter:blur(14px); border-top:1px solid var(--line);">
+  <div style="position:fixed; bottom:0; left:0; right:0; z-index:40; display:grid; grid-template-columns:repeat(5,1fr); background:var(--surf); border-top:1px solid var(--line);">
     <sc-for list="{{ tabItems }}" as="t" hint-placeholder-count="5">
       <button onClick="{{ t.go }}" style="background:transparent; border:none; border-top:2px solid {{ t.bar }}; color:{{ t.fg }}; padding:11px 4px 13px; font-size:11.5px; font-weight:600; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; min-height:56px; justify-content:center;">
         <span style="font-family:var(--fm); font-size:9px; letter-spacing:.1em; text-transform:uppercase;">{{ t.label }}</span>
@@ -1454,17 +1458,17 @@
 
   <sc-if value="{{ moreOpen }}" hint-placeholder-val="{{ false }}">
   <div onClick="{{ closeMore }}" style="position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.55); display:flex; align-items:flex-end; animation:cFade .2s ease both;">
-    <div style="width:100%; max-height:78vh; overflow-y:auto; background:var(--surf); border-top:1px solid var(--line2); border-radius:18px 18px 0 0; padding:18px 16px 26px; animation:cRise .26s ease both;">
+    <div style="width:100%; max-height:78vh; overflow-y:auto; background:var(--surf); border-top:1px solid var(--line2); border-radius:4px 4px 0 0; padding:18px 16px 26px; animation:cRise .26s ease both;">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
         <span style="font-family:var(--fm); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--tx3);">All sections</span>
-        <button onClick="{{ closeMore }}" style="background:transparent; border:1px solid var(--line); color:var(--tx2); border-radius:8px; padding:5px 10px; font-size:12px; cursor:pointer;">Close</button>
+        <button onClick="{{ closeMore }}" style="background:transparent; border:1px solid var(--line); color:var(--tx2); border-radius:4px; padding:5px 10px; font-size:12px; cursor:pointer;">Close</button>
       </div>
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px;">
         <sc-for list="{{ allSections }}" as="s" hint-placeholder-count="14">
-          <button onClick="{{ s.go }}" style="text-align:left; background:{{ s.bg }}; border:1px solid var(--line); color:{{ s.fg }}; border-radius:10px; padding:12px 13px; font-size:13.5px; font-weight:600; cursor:pointer;">{{ s.label }}</button>
+          <button onClick="{{ s.go }}" style="text-align:left; background:{{ s.bg }}; border:1px solid var(--line); color:{{ s.fg }}; border-radius:4px; padding:12px 13px; font-size:13.5px; font-weight:600; cursor:pointer;">{{ s.label }}</button>
         </sc-for>
       </div>
-      <button onClick="{{ logout }}" style="width:100%; margin-top:14px; background:transparent; border:1px solid var(--coral); color:var(--coral); border-radius:10px; padding:12px; font-size:13.5px; font-weight:600; cursor:pointer;">Log out</button>
+      <button onClick="{{ logout }}" style="width:100%; margin-top:14px; background:transparent; border:1px solid var(--coral); color:var(--coral); border-radius:4px; padding:12px; font-size:13.5px; font-weight:600; cursor:pointer;">Log out</button>
     </div>
   </div>
   </sc-if>
@@ -1472,7 +1476,7 @@
 </sc-if>
 
 <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
-<div style="position:fixed; z-index:90; bottom:{{ toastBottom }}; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:10px; background:var(--surf3); border:1px solid var(--line2); border-radius:999px; padding:10px 18px; box-shadow:var(--shadow); animation:cRise .24s ease both; max-width:calc(100vw - 32px);">
+<div style="position:fixed; z-index:90; bottom:{{ toastBottom }}; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:10px; background:var(--surf3); border:1px solid var(--line2); border-radius:4px; padding:10px 18px; box-shadow:var(--shadow); animation:cRise .24s ease both; max-width:calc(100vw - 32px);">
   <span style="width:6px; height:6px; border-radius:50%; flex:none; background:var(--teal);"></span>
   <span style="font-size:13px; font-weight:600;">{{ toast }}</span>
 </div>
@@ -1481,11 +1485,11 @@
 </div>
 
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#E8A33D&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#E8A33D&quot;,&quot;#46C79C&quot;,&quot;#E4674A&quot;,&quot;#9A8EE0&quot;],&quot;section&quot;:&quot;Theme&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;comfortable&quot;,&quot;options&quot;:[&quot;compact&quot;,&quot;comfortable&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;currency&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;₹&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data&quot;},&quot;strictVerification&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Data&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;comfortable&quot;,&quot;options&quot;:[&quot;compact&quot;,&quot;comfortable&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;currency&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;₹&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data&quot;},&quot;strictVerification&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Data&quot;}}">
 class Component extends DCLogic {
   state = {
     view: 'landing', section: 'dashboard',
-    theme: 'dark',
+    theme: 'light',
     wide: typeof window !== 'undefined' ? window.innerWidth >= 900 : true,
     authMode: 'login', authEmail: 'arjun@example.com', authPass: 'demo1234', authName: 'Arjun Mehta', authErr: '',
     user: null,
@@ -1523,8 +1527,7 @@ class Component extends DCLogic {
   applyTheme() { document.body.dataset.theme = this.state.theme; }
   applyProps() {
     const b = document.body;
-    if (this.props.accent) b.style.setProperty('--amber', this.props.accent);
-    b.style.setProperty('--pad', this.props.density === 'compact' ? '14px' : this.props.density === 'spacious' ? '30px' : '20px');
+    b.style.setProperty('--pad', this.props.density === 'compact' ? '16px' : this.props.density === 'spacious' ? '36px' : '24px');
   }
   toggleTheme = () => this.setState(s => ({ theme: s.theme === 'dark' ? 'light' : 'dark' }), this.applyTheme);
 
@@ -1785,7 +1788,7 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state;
     const active = s.trips.find(t => t.id === s.activeTripId) || s.trips[0] || null;
-    const modeLabels = { Bike: '🏍 Bike', Car: '🚗 Car', Train: '🚆 Train', Flight: '✈ Flight', Bus: '🚌 Bus', Mixed: '🔀 Mixed' };
+    const modeLabels = { Bike: 'Bike', Car: 'Car', Train: 'Train', Flight: 'Flight', Bus: 'Bus', Mixed: 'Mixed' };
     const statusTint = st => st === 'Completed' ? 'var(--teal)' : st === 'Draft' ? 'var(--tx3)' : 'var(--amber)';
 
     const sectionTitles = {
@@ -2040,7 +2043,7 @@ class Component extends DCLogic {
       wizSteps: stepDefs.map(([n, label]) => ({
         n: String(n), label, go: this.gotoStep(n),
         bg: s.wizStep === n ? 'var(--amber)' : s.wizStep > n ? 'var(--tealq)' : 'var(--surf2)',
-        fg: s.wizStep === n ? '#12100B' : s.wizStep > n ? 'var(--teal)' : 'var(--tx3)',
+        fg: s.wizStep === n ? 'var(--onAccent)' : s.wizStep > n ? 'var(--teal)' : 'var(--tx3)',
         bd: s.wizStep === n ? 'var(--amber)' : s.wizStep > n ? 'var(--teal)' : 'var(--line)',
         labelFg: s.wizStep === n ? 'var(--tx)' : 'var(--tx3)',
       })),
@@ -2191,7 +2194,7 @@ class Component extends DCLogic {
         sunLabel: w.sunrise ? '↑ ' + w.sunrise + '  ↓ ' + w.sunset : '',
         optimize: this.optimizeDay(d.id),
         optimizing: s.optimizing === d.id,
-        optLabel: s.optimizing === d.id ? 'Optimizing…' : '✨ Optimize day',
+        optLabel: s.optimizing === d.id ? 'Optimizing…' : 'Optimize day',
         addAct: this.startAdd(d.id),
         isAdding: s.addingTo === d.id,
         acts: this.actsFor(d.id).map(a => {
