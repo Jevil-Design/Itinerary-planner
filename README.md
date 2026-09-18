@@ -11,6 +11,8 @@ Give it a source, a destination and dates. It builds, optimizes, saves and manag
 | Path | What it is |
 |---|---|
 | `Contour — AI Travel Itinerary Builder.dc.html` | The complete UI design, as a working interactive prototype. Every screen, state and interaction the product needs. Open it in a browser. |
+| `index.html` | The same prototype, served as the site entry point so a static host resolves `/`. Identical to the `.dc.html` apart from a `<title>`. Re-copy it if you regenerate the design. |
+| `support.js` | The runtime the prototype needs. Must sit beside the HTML — both files reference it as `./support.js`. |
 | `database/schema.sql` | Production PostgreSQL schema: 14 tables, constraints, indexes, `updated_at` triggers, the signup hook, all RLS policies, the transactional generate function, and the redacted share-read function. |
 | `database/seed.sql` | Optional demo trip, clearly marked as test data. |
 | `docs/api-contract.md` | Every API route: method, path, auth, request body, response shape, error codes. |
