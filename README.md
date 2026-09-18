@@ -14,6 +14,7 @@ Give it a source, a destination and dates. It builds, optimizes, saves and manag
 | `index.html` | The same prototype, served as the site entry point so a static host resolves `/`. Identical to the `.dc.html` apart from a `<title>`. Re-copy it if you regenerate the design. |
 | `support.js` | The runtime the prototype needs. Must sit beside the HTML — both files reference it as `./support.js`. |
 | `database/schema.sql` | Production PostgreSQL schema: 14 tables, constraints, indexes, `updated_at` triggers, the signup hook, all RLS policies, the transactional generate function, and the redacted share-read function. |
+| `database/schema.neon.sql` | The same schema ported to **Neon** (Neon Auth + Neon RLS). This is what is actually deployed — see *Setup — Neon* below. |
 | `database/seed.sql` | Optional demo trip, clearly marked as test data. |
 | `docs/api-contract.md` | Every API route: method, path, auth, request body, response shape, error codes. |
 | `docs/service-interfaces.md` | The provider-agnostic service layer (AI, routing, places, weather, hotels) so any provider can be swapped without touching a route handler. |
@@ -67,7 +68,100 @@ database/{schema.sql,seed.sql}
 
 ---
 
-## Setup
+## Setup — Neon  (this is the one that is live)
+
+A Neon project is already provisioned and the schema is applied:
+
+| | |
+|---|---|
+| Project | `Contour-Itinerary-Planner` (`lively-forest-21234465`) |
+| Region | `aws-ap-southeast-1` (Singapore — nearest to the Vercel `bom1` deploy) |
+| Postgres | 17 |
+| Auth | Neon Auth (Stack), synced into `neon_auth.users_sync` |
+
+### 1. Apply or re-apply the schema
+
+`database/schema.neon.sql` is idempotent — re-running it is safe.
+
+```bash
+psql "$DATABASE_URL_UNPOOLED" -f database/schema.neon.sql
+```
+
+### 2. What changed from the Supabase version
+
+Tables, columns, constraints, indexes and functions are identical. Only identity
+plumbing differs:
+
+| Supabase | Neon |
+|---|---|
+| `auth.users` | `neon_auth.users_sync` |
+| `auth.uid()` → `uuid` | `public.current_user_id()` → `text` |
+| `profiles.id`, `trips.user_id`, `saved_places.user_id` as `uuid` | `text` |
+| role `anon` | role `anonymous` |
+| signup trigger on `auth.users` | trigger on `neon_auth.users_sync` |
+
+User ids are `text` because `neon_auth.users_sync.id` is `text` (Stack Auth ids).
+Every other `uuid` is unchanged.
+
+`public.current_user_id()` exists because `pg_session_jwt` installs
+`auth.user_id()` into a schema owned by Neon's `cloud_admin`. The `authenticated`
+role cannot reach it, and `neondb_owner` cannot grant what it does not hold with
+grant option — so `GRANT USAGE ON SCHEMA auth` silently does nothing. A policy
+written as `user_id = auth.user_id()` therefore raises `42501 permission denied
+for schema auth` instead of filtering. The wrapper is `SECURITY DEFINER` with an
+empty `search_path`, and every policy goes through it.
+
+### 3. Who bypasses RLS
+
+`neondb_owner` **owns** these tables, so like any Postgres table owner it bypasses
+row level security. That is the server-side/service path, and it is what
+`DATABASE_URL` points at.
+
+For RLS to actually bind, connect as `authenticated` carrying the user's JWT:
+
+```ts
+import { neon } from '@neondatabase/serverless'
+const sql = neon(process.env.DATABASE_AUTHENTICATED_URL!, { authToken })
+```
+
+Without a JWT, `current_user_id()` is `null` and every policy denies.
+
+### 4. Two deliberate deviations from `schema.sql`
+
+1. `admin_overview` is created `WITH (security_invoker = true)`. The original
+   carried a comment claiming RLS still applied to it, but a Postgres view runs
+   as its **owner** unless that option is set — so on the original the view
+   bypassed RLS. Setting it makes the comment true.
+2. The signup hook fires on `neon_auth.users_sync`, which Neon populates by
+   **sync** rather than inside the signup transaction. A profile row appears
+   shortly after signup, not atomically with it. Call `public.ensure_profile()`
+   from the first authenticated request when it has to exist immediately.
+
+### 5. Verifying RLS
+
+`set role authenticated` needs role membership, which is not granted by the
+schema. Grant it once if you want to test by hand:
+
+```sql
+grant authenticated to neondb_owner;
+```
+
+Then, inside a transaction you roll back, stub the identity function to
+impersonate a user — DDL is transactional in Postgres, so nothing persists:
+
+```sql
+begin;
+create or replace function public.current_user_id() returns text
+  language sql stable security definer set search_path = ''
+  as $$ select 'the-user-id'::text $$;
+set local role authenticated;
+select count(*) from trips;          -- only that user's trips
+rollback;                            -- function and role both restored
+```
+
+---
+
+## Setup — Supabase  (the original target, kept for reference)
 
 ### 1. Create the Supabase project
 
