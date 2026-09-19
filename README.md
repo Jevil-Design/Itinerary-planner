@@ -11,8 +11,10 @@ Give it a source, a destination and dates. It builds, optimizes, saves and manag
 | Path | What it is |
 |---|---|
 | `Contour — AI Travel Itinerary Builder.dc.html` | The complete UI design, as a working interactive prototype. Every screen, state and interaction the product needs. Open it in a browser. |
-| `index.html` | The same prototype, served as the site entry point so a static host resolves `/`. Identical to the `.dc.html` apart from a `<title>`. Re-copy it if you regenerate the design. |
-| `support.js` | The runtime the prototype needs. Must sit beside the HTML — both files reference it as `./support.js`. |
+| `support.js` | The runtime the prototype needs, beside the `.dc.html` so it opens straight from disk. |
+| `public/prototype/` | The prototype and its runtime as served, at **/prototype**. Next.js owns `/` now, so the prototype lives here as the behavioural reference. Re-copy `index.html` from the `.dc.html` if you regenerate the design. |
+| `app/`, `lib/`, `stack.ts` | The real application — see *The application* below. |
+| `scripts/verify-persistence.mjs` | Proves the storage contract against the live database, inside a rolled-back transaction. |
 | `database/schema.sql` | Production PostgreSQL schema: 14 tables, constraints, indexes, `updated_at` triggers, the signup hook, all RLS policies, the transactional generate function, and the redacted share-read function. |
 | `database/schema.neon.sql` | The same schema ported to **Neon** (Neon Auth + Neon RLS). This is what is actually deployed — see *Setup — Neon* below. |
 | `database/seed.sql` | Optional demo trip, clearly marked as test data. |
@@ -23,6 +25,69 @@ Give it a source, a destination and dates. It builds, optimizes, saves and manag
 ### Reading the prototype as a spec
 
 The prototype's data layer is shaped exactly like `schema.sql` — same tables, same column names, same relationships — and every mutation goes through a single `save()` service call. Replacing that one function with Supabase client calls is what turns the prototype into the app. The prototype is the reference for behaviour; `schema.sql` is the reference for shape.
+
+---
+
+## The application
+
+The prototype is the spec; this is the implementation. It is deliberately a thin
+vertical slice — sign in, create a trip, see it persist — rather than a broad
+surface that has never touched the database.
+
+    app/
+      layout.tsx                  Stack provider, fonts, metadata
+      page.tsx                    landing, session aware
+      handler/[...stack]/         sign-in, sign-up, reset, OAuth callbacks
+      (app)/layout.tsx            auth guard for every screen beneath it
+      (app)/trips/                list + empty state
+      (app)/trips/new/            create form
+      api/trips/                  GET list, POST create
+      api/trips/[id]/             GET one, DELETE
+      api/me/                     session probe
+    lib/
+      db.ts                       two connections: service and RLS-bound
+      auth.ts                     session -> user, ensures the profile row
+      validation.ts               zod schemas shared by form and route
+      http.ts                     { error: { code, message } } envelope
+      queries/trips.ts            data layer, every call scoped by userId
+
+### Running it
+
+```bash
+cp .env.example .env.local     # fill in DATABASE_URL and the Stack keys
+npm install
+npm run dev
+```
+
+`STACK_SECRET_SERVER_KEY` is not available through the Neon API. Copy it from the
+Neon Console: **Auth → Configuration → Stack Auth keys → Secret server key**.
+Without it there is no session and every protected route answers 401.
+
+Email/password sign-in is **off** by default on a fresh Neon Auth project; only
+shared OAuth is enabled. Turn it on in the same Console screen if you want it.
+
+### Two connections, on purpose
+
+`DATABASE_URL` authenticates as `neondb_owner`, which owns the tables and so
+**bypasses RLS**. It is the service path, and it is why every function in
+`lib/queries` takes a `userId` and scopes on it — there is deliberately no
+"get any trip by id".
+
+`DATABASE_AUTHENTICATED_URL` connects as `authenticated` carrying the user's JWT,
+so RLS binds and a forgotten `WHERE` clause still returns nothing that is not
+theirs. Defence in depth, not the primary gate.
+
+### Verifying it
+
+```bash
+node scripts/verify-persistence.mjs   # 17 checks against the live database
+npm run typecheck
+npm run build
+```
+
+The persistence script writes two users and their trips, asserts neither can see
+or delete the other's, checks the CHECK constraints and the cascade, then rolls
+the whole transaction back.
 
 ---
 
