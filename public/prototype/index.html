@@ -1961,7 +1961,7 @@ class Component extends DCLogic {
   }
 
   packCount() {
-    const p = this.state.packing;
+    const p = this.state.packing.filter(x => x.trip_id === this.state.activeTripId);
     if (!p.length) return '';
     return p.filter(x => x.completed).length + '/' + p.length;
   }
@@ -2000,6 +2000,100 @@ class Component extends DCLogic {
 
   genSteps = ['Trip details validated', 'Route analyzed', 'Travel time calculated', 'Overnight locations selected', 'Finding attractions', 'Finding hotels', 'Finding restaurants', 'Checking weather', 'Optimizing daily schedule', 'Calculating budget', 'Creating packing list', 'Saving trip to Supabase'];
 
+  /* Builds the part of a plan that follows deterministically from the wizard:
+     the days and their dates, one route leg, a packing list keyed to how you
+     are travelling, the pre-trip checklist, and the budget categories to fill
+     in. Distances, costs, stays, food, sightseeing and weather are left empty
+     on purpose -- those need the routing, places and weather providers, and
+     inventing them would be exactly the thing this product promises not to do. */
+  buildPlan(trip) {
+    const id = (p, i) => p + trip.id + '_' + i;
+    const addDays = (iso, n) => {
+      const d = new Date(iso + 'T00:00:00Z');
+      d.setUTCDate(d.getUTCDate() + n);
+      return d.toISOString().slice(0, 10);
+    };
+
+    const days = [];
+    for (let i = 0; i < trip.number_of_days; i++) {
+      days.push({
+        id: id('d', i + 1), trip_id: trip.id, day_number: i + 1,
+        date: addDays(trip.start_date, i),
+        title: i === 0 ? trip.source + ' → ' + trip.destination : 'In ' + trip.destination,
+        location: i === 0 ? trip.destination : trip.destination,
+        summary: '',
+        distance: 0, travel_time_minutes: 0, estimated_cost: 0,
+      });
+    }
+
+    const routes = [{
+      id: id('r', 1), trip_id: trip.id, route_order: 1,
+      from_location: trip.source, to_location: trip.destination,
+      distance_km: null, duration_minutes: null,
+      toll_estimate: 0, fuel_estimate: 0, fuel_cost: 0,
+      breaks: [], fuel_stops: [], verified: false,
+    }];
+
+    const PACK = {
+      common: [
+        ['Documents', 'Photo ID'], ['Documents', 'Travel insurance'],
+        ['Documents', 'Printed itinerary and emergency contacts'],
+        ['Clothing', 'Clothes for ' + trip.number_of_days + ' days'],
+        ['Toiletries', 'Toiletries and any medication'],
+        ['Electronics', 'Phone charger'], ['Electronics', 'Power bank'],
+        ['Travel Gear', 'First aid kit'],
+        ['Weather Items', 'Rain layer'], ['Weather Items', 'Sunscreen'],
+      ],
+      Bike: [
+        ['Bike Gear', 'Helmet'], ['Bike Gear', 'Riding jacket and gloves'],
+        ['Bike Gear', 'Puncture repair kit and tyre inflator'],
+        ['Bike Gear', 'Chain lube and basic tools'],
+        ['Documents', 'Licence, registration and insurance'],
+      ],
+      Car: [
+        ['Documents', 'Licence, registration and insurance'],
+        ['Travel Gear', 'Phone mount and car charger'],
+        ['Travel Gear', 'Jump leads'],
+      ],
+      Train: [['Documents', 'Ticket or PNR'], ['Travel Gear', 'Neck pillow']],
+      Flight: [['Documents', 'Boarding pass'], ['Travel Gear', 'Cabin-size liquids bag']],
+      Bus: [['Documents', 'Ticket'], ['Travel Gear', 'Neck pillow']],
+      Mixed: [['Documents', 'Tickets for each leg']],
+    };
+    const packing = PACK.common.concat(PACK[trip.travel_mode] || []).map((row, i) => ({
+      id: id('p', i + 1), trip_id: trip.id,
+      category: row[0], item_name: row[1], quantity: 1, completed: false,
+    }));
+
+    const checklist = [
+      'Confirm stays for every night',
+      'Check documents are valid and carried',
+      trip.travel_mode === 'Bike' || trip.travel_mode === 'Car'
+        ? 'Service the vehicle — brakes, tyres, fluids'
+        : 'Confirm tickets and seat allocation',
+      'Check the weather 48 hours before departure',
+      'Download offline maps for the route',
+      'Sort cash and payment methods',
+      'Share the itinerary with someone at home',
+      'Finish packing',
+    ].map((label, i) => ({
+      id: id('c', i + 1), trip_id: trip.id, label, done: false, item_order: i,
+    }));
+
+    const drives = trip.travel_mode === 'Bike' || trip.travel_mode === 'Car';
+    const cats = ['Transportation', 'Hotel', 'Food', 'Activities']
+      .concat(drives ? ['Fuel', 'Toll', 'Parking'] : ['Local Transport'])
+      .concat(['Miscellaneous', 'Emergency Buffer']);
+    const expenses = cats.map((category, i) => ({
+      id: id('e', i + 1), trip_id: trip.id, category,
+      description: '', estimated_amount: 0, actual_amount: 0,
+      currency: trip.currency || 'INR', expense_date: trip.start_date,
+      payment_method: 'UPI', notes: '',
+    }));
+
+    return { days, routes, packing, checklist, expenses };
+  }
+
   runGen = () => {
     if (this.wizErrors().length) return this.forceUpdate();
     this.setState({ section: 'generating', genIdx: 0, genDone: false });
@@ -2016,8 +2110,18 @@ class Component extends DCLogic {
             number_of_days: nd, number_of_nights: nd - 1,
             budget_amount: Number(d.budget_amount) || 0, total_distance: 0, estimated_total_cost: 0,
           });
-          this.setState(s => ({ genDone: true, trips: [trip].concat(s.trips), activeTripId: trip.id }));
-          this.toast('Trip saved · written in one transaction');
+          const plan = this.buildPlan(trip);
+          this.setState(s => ({
+            genDone: true,
+            trips: [trip].concat(s.trips),
+            activeTripId: trip.id,
+            days: s.days.concat(plan.days),
+            routes: s.routes.concat(plan.routes),
+            packing: s.packing.concat(plan.packing),
+            checklist: s.checklist.concat(plan.checklist),
+            expenses: s.expenses.concat(plan.expenses),
+          }));
+          this.toast('Trip saved · ' + plan.days.length + ' days, packing list and budget created');
         } else step();
       }, 540);
     };
@@ -2184,7 +2288,12 @@ class Component extends DCLogic {
     const wx = {}; s.weather.forEach(w => { wx[w.day] = w; });
     const dur = m => m >= 60 ? Math.floor(m / 60) + 'h ' + (m % 60 ? (m % 60) + 'm' : '') : m + 'm';
 
-    const itinDays = s.days.map(d => {
+    /* Everything below is scoped to the active trip. Without this a day or a
+       stay belonging to another trip renders on this one. */
+    const tripId = active ? active.id : null;
+    const mine = rows => rows.filter(r => r.trip_id === tripId);
+
+    const itinDays = mine(s.days).sort((a, b) => a.day_number - b.day_number).map(d => {
       const w = wx[d.id] || {};
       return Object.assign({}, d, {
         dateLabel: new Date(d.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
@@ -2226,7 +2335,7 @@ class Component extends DCLogic {
        longitude once a routing provider has filled them in; until then there
        are no coordinates to project, so the legs are laid out evenly along the
        panel. Either way the UI labels it a schematic projection. */
-    const legs = s.routes.slice().sort((a, b) => a.route_order - b.route_order);
+    const legs = mine(s.routes).slice().sort((a, b) => a.route_order - b.route_order);
     const stops = [];
     legs.forEach((r, i) => {
       if (i === 0) stops.push({ name: r.from_location, kind: 'Start', tint: 'var(--amber)' });
@@ -2266,21 +2375,21 @@ class Component extends DCLogic {
     const poly = stops.map((p, i) => px(p, i).toFixed(2) + ',' + py(p, i).toFixed(2)).join(' ');
     const hasMap = stops.length > 0;
 
-    const routeLegs = s.routes.map(r => Object.assign({}, r, {
+    const routeLegs = mine(s.routes).map(r => Object.assign({}, r, {
       title: r.from_location + ' → ' + r.to_location,
-      kmLabel: r.distance_km + ' km',
-      durLabel: dur(r.duration_minutes),
-      fuelLabel: r.fuel_estimate.toFixed(1) + ' L · ' + this.cur(r.fuel_cost),
+      kmLabel: r.distance_km == null ? 'Not measured' : r.distance_km + ' km',
+      durLabel: r.duration_minutes == null ? '—' : dur(r.duration_minutes),
+      fuelLabel: r.fuel_estimate ? r.fuel_estimate.toFixed(1) + ' L · ' + this.cur(r.fuel_cost) : 'Needs a routing provider',
       tollLabel: r.toll_estimate ? this.cur(r.toll_estimate) : 'No toll (2-wheeler)',
-      breaksLabel: r.breaks.join(' · '),
+      breaksLabel: r.breaks.length ? r.breaks.join(' · ') : 'None planned yet',
       fuelStopsLabel: r.fuel_stops.length ? r.fuel_stops.join(' · ') : 'Carry reserve',
     }));
 
     const catGroups = ['Budget', 'Mid-Range', 'Premium'];
     const hotelByLoc = [];
     // Group by whatever halts the trip actually has, in the order they appear.
-    s.hotels.map(h => h.location).filter((v, i, a) => a.indexOf(v) === i).forEach(loc => {
-      const items = s.hotels.filter(h => h.location === loc);
+    mine(s.hotels).map(h => h.location).filter((v, i, a) => a.indexOf(v) === i).forEach(loc => {
+      const items = mine(s.hotels).filter(h => h.location === loc);
       if (items.length) hotelByLoc.push({
         loc, count: items.length + ' options',
         items: items.sort((a, b) => catGroups.indexOf(a.category) - catGroups.indexOf(b.category)).map(h => Object.assign({}, h, {
@@ -2296,14 +2405,14 @@ class Component extends DCLogic {
     const meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner'];
     const restoGroups = meals.map(m => ({
       meal: m,
-      items: s.restos.filter(r => r.meal === m).map(r => Object.assign({}, r, {
+      items: mine(s.restos).filter(r => r.meal === m).map(r => Object.assign({}, r, {
         dishes: r.signature_dishes,
         save: () => this.save('Saved to your places', st => ({ places: st.places.concat({ id: 'sp' + Date.now(), user_id: 'u1', name: r.restaurant_name, location: r.location, place_type: 'Restaurant', notes: '' }) })),
       })),
     })).filter(g => g.items.length);
 
     const priOrder = { 'Must Visit': 0, Recommended: 1, Optional: 2 };
-    const sightList = s.sights.slice().sort((a, b) => priOrder[a.priority] - priOrder[b.priority]).map(x => Object.assign({}, x, {
+    const sightList = mine(s.sights).slice().sort((a, b) => priOrder[a.priority] - priOrder[b.priority]).map(x => Object.assign({}, x, {
       durLabel: dur(x.recommended_duration),
       feeLabel: x.entry_fee ? this.cur(x.entry_fee) : 'Free',
       priTint: x.priority === 'Must Visit' ? 'var(--amber)' : x.priority === 'Optional' ? 'var(--tx3)' : 'var(--teal)',
@@ -2315,7 +2424,7 @@ class Component extends DCLogic {
     /* The light schedule is built from the trip's own photography-priority
        sights and the per-day sunrise/sunset the weather service returned.
        Nothing to show until a generated trip provides both. */
-    const photoSpots = s.sights
+    const photoSpots = mine(s.sights)
       .filter(x => x.category === 'Photography' || x.priority === 'Must Visit')
       .slice(0, 6)
       .map(x => {
@@ -2378,7 +2487,7 @@ class Component extends DCLogic {
             ? Math.round(longestRide.distance) + ' km · ' + dur(longestRide.travel_time_minutes)
             : '—' },
       ],
-      weatherDays: s.weather.map((w, i) => ({
+      weatherDays: s.weather.filter(w => itinDays.some(d => d.id === w.day)).map((w, i) => ({
         place: w.place, cond: w.cond, hi: w.hi + '°', lo: w.lo + '°',
         rain: w.rain + '%', wind: w.wind + ' km/h', sunrise: w.sunrise, sunset: w.sunset,
         label: 'Day ' + (i + 1), alert: w.alert, hasAlert: !!w.alert,
@@ -2409,15 +2518,17 @@ class Component extends DCLogic {
 
   moneyVals(active) {
     const s = this.state;
-    const est = s.expenses.reduce((a, e) => a + (e.estimated_amount || 0), 0);
-    const act = s.expenses.reduce((a, e) => a + (e.actual_amount || 0), 0);
+    const tripId = active ? active.id : null;
+    const expenses = s.expenses.filter(e => e.trip_id === tripId);
+    const est = expenses.reduce((a, e) => a + (e.estimated_amount || 0), 0);
+    const act = expenses.reduce((a, e) => a + (e.actual_amount || 0), 0);
     const pax = active ? active.travellers : 1;
     const days = active ? active.number_of_days : 1;
     /* One ink ramp for the budget breakdown, mixed against the page colour so
        it inverts with the theme instead of staying pastel on black. */
     const tints = [92, 80, 68, 57, 46, 37, 29, 22, 16].map(p => 'color-mix(in oklab, var(--tx) ' + p + '%, var(--bg))');
     const byCat = {};
-    s.expenses.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + (e.estimated_amount || 0); });
+    expenses.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + (e.estimated_amount || 0); });
     const cats = Object.keys(byCat);
     let acc = 0;
     const slices = cats.map((c, i) => {
@@ -2431,8 +2542,8 @@ class Component extends DCLogic {
 
     return {
       sBudget: s.section === 'budget', sExp: s.section === 'expenses',
-      hasBudget: s.expenses.length > 0, noBudget: s.expenses.length === 0,
-      noExpenses: s.expenses.length === 0,
+      hasBudget: expenses.length > 0, noBudget: expenses.length === 0,
+      noExpenses: expenses.length === 0,
       // conic-gradient() with no stops is invalid CSS and paints nothing, so an
       // empty budget falls back to a flat ring.
       donut: slices.length ? 'conic-gradient(' + conic + ')' : 'var(--surf3)',
@@ -2446,12 +2557,12 @@ class Component extends DCLogic {
         { label: budgetCap ? 'Against your cap' : 'No cap set', value: budgetCap ? this.cur(budgetCap) : '—', tint: overBudget ? 'var(--coral)' : 'var(--teal)' },
       ],
       overBudget, budgetWarning: overBudget ? 'Estimate is ' + this.cur(est - budgetCap) + ' over your ' + this.cur(budgetCap) + ' cap. Dropping to budget-band stays would recover most of it.' : '',
-      budgetRows: s.expenses.map(e => Object.assign({}, e, {
+      budgetRows: expenses.map(e => Object.assign({}, e, {
         estLabel: e.estimated_amount, onEst: this.onEstimate(e.id), commit: this.commitEstimate,
         pctLabel: est ? Math.round((e.estimated_amount / est) * 100) + '%' : '0%',
         barW: est ? Math.round((e.estimated_amount / est) * 100) + '%' : '0%',
       })),
-      expenseRows: s.expenses.map(e => {
+      expenseRows: expenses.map(e => {
         const diff = (e.actual_amount || 0) - (e.estimated_amount || 0);
         return Object.assign({}, e, {
           estLabel: this.cur(e.estimated_amount),
@@ -2469,7 +2580,7 @@ class Component extends DCLogic {
         { label: 'Total estimated', value: this.cur(est), tint: 'var(--tx2)' },
         { label: 'Total actual', value: this.cur(act), tint: 'var(--tx)' },
         { label: act > est ? 'Over budget' : 'Remaining', value: this.cur(Math.abs(est - act)), tint: act > est ? 'var(--coral)' : 'var(--teal)' },
-        { label: 'Logged entries', value: String(s.expenses.filter(e => e.actual_amount).length), tint: 'var(--tx2)' },
+        { label: 'Logged entries', value: String(expenses.filter(e => e.actual_amount).length), tint: 'var(--tx2)' },
       ],
       expForm: s.expForm, hasExpForm: !!s.expForm,
       startExp: this.startExp, cancelExp: this.cancelExp, commitExp: this.commitExp,
@@ -2610,10 +2721,13 @@ class Component extends DCLogic {
 
   miscVals(active) {
     const s = this.state;
-    const done = s.packing.filter(p => p.completed).length;
+    const tripId = active ? active.id : null;
+    const packing = s.packing.filter(p => p.trip_id === tripId);
+    const checklist = s.checklist.filter(c => c.trip_id === tripId);
+    const done = packing.filter(p => p.completed).length;
     const cats = [];
     ['Documents', 'Clothing', 'Weather Items', 'Electronics', 'Bike Gear', 'Toiletries', 'Travel Gear'].forEach(c => {
-      const items = s.packing.filter(p => p.category === c);
+      const items = packing.filter(p => p.category === c);
       if (items.length) cats.push({
         cat: c, count: items.filter(i => i.completed).length + '/' + items.length,
         items: items.map(p => Object.assign({}, p, {
@@ -2626,7 +2740,7 @@ class Component extends DCLogic {
         })),
       });
     });
-    const checkDone = s.checklist.filter(c => c.done).length;
+    const checkDone = checklist.filter(c => c.done).length;
 
     const placeTints = { Hotel: 'var(--violet)', Restaurant: 'var(--coral)', Attraction: 'var(--teal)', Photography: 'var(--amber)' };
     const pf = s.savedFilter;
@@ -2639,17 +2753,17 @@ class Component extends DCLogic {
       sChat: s.section === 'assistant', sProfile: s.section === 'profile', sAdmin: s.section === 'admin',
       packCats: cats,
       hasPacking: cats.length > 0, noPacking: cats.length === 0,
-      hasChecklist: s.checklist.length > 0, noChecklist: s.checklist.length === 0,
-      packProgress: done + ' / ' + s.packing.length + ' items packed',
-      packPct: s.packing.length ? Math.round((done / s.packing.length) * 100) + '%' : '0%',
+      hasChecklist: checklist.length > 0, noChecklist: checklist.length === 0,
+      packProgress: done + ' / ' + packing.length + ' items packed',
+      packPct: packing.length ? Math.round((done / packing.length) * 100) + '%' : '0%',
       newPack: s.newPack || '', onNewPack: e => this.setState({ newPack: e.target.value }), addPack: this.addPack,
-      checkItems: s.checklist.map(c => Object.assign({}, c, {
+      checkItems: checklist.map(c => Object.assign({}, c, {
         toggle: this.toggleCheck(c.id), mark: c.done ? '✓' : '',
         bd: c.done ? 'var(--teal)' : 'var(--line2)', bg: c.done ? 'var(--teal)' : 'transparent',
         fg: c.done ? 'var(--tx3)' : 'var(--tx)', deco: c.done ? 'line-through' : 'none',
       })),
-      checkProgress: checkDone + ' / ' + s.checklist.length + ' done',
-      checkPct: s.checklist.length ? Math.round((checkDone / s.checklist.length) * 100) + '%' : '0%',
+      checkProgress: checkDone + ' / ' + checklist.length + ' done',
+      checkPct: checklist.length ? Math.round((checkDone / checklist.length) * 100) + '%' : '0%',
       newCheck: s.newCheck || '', onNewCheck: e => this.setState({ newCheck: e.target.value }), addCheck: this.addCheck,
 
       placeList, placeFilters: ['All', 'Hotel', 'Restaurant', 'Attraction', 'Photography'].map(f => ({
