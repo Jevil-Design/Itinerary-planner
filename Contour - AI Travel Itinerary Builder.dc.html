@@ -115,39 +115,14 @@
           </span>
         </div>
         <div style="padding:20px 18px;">
-          <div style="font-family:var(--fm); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--amber);">Bike · Moderate · 4 travellers</div>
-          <div style="font-family:var(--fd); font-size:31px; line-height:1.15; margin-top:8px;">Kolkata → Rinchenpong</div>
-          <div style="font-size:13px; color:var(--tx2); margin-top:4px;">23 Jan – 27 Jan 2027 · 5 days, 4 nights</div>
-          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1px; margin-top:20px; background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
-            <div style="background:var(--surf); padding:13px 11px;">
-              <div style="font-family:var(--fm); font-size:16px;">1,430</div>
-              <div style="font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3); margin-top:2px;">km</div>
-            </div>
-            <div style="background:var(--surf); padding:13px 11px;">
-              <div style="font-family:var(--fm); font-size:16px;">34h</div>
-              <div style="font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3); margin-top:2px;">Ride time</div>
-            </div>
-            <div style="background:var(--surf); padding:13px 11px;">
-              <div style="font-family:var(--fm); font-size:16px;">82<span style="font-size:11px; color:var(--tx3);">L</span></div>
-              <div style="font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3); margin-top:2px;">Fuel</div>
-            </div>
-            <div style="background:var(--surf); padding:13px 11px;">
-              <div style="font-family:var(--fm); font-size:16px;">53k</div>
-              <div style="font-family:var(--fm); font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--tx3); margin-top:2px;">₹ est.</div>
-            </div>
-          </div>
-          <div style="margin-top:18px; display:flex; flex-direction:column; gap:0;">
-            <sc-for list="{{ heroLegs }}" as="leg" hint-placeholder-count="5">
-              <div style="display:grid; grid-template-columns:18px minmax(0,1fr) auto; gap:12px; align-items:center;">
-                <div style="display:flex; flex-direction:column; align-items:center; align-self:stretch;">
-                  <span style="width:7px; height:7px; border-radius:50%; background:{{ leg.dot }}; margin-top:13px;"></span>
-                  <span style="flex:1; width:1px; background:repeating-linear-gradient(to bottom, var(--line2) 0 3px, transparent 3px 7px);"></span>
-                </div>
-                <div style="padding:8px 0 8px;">
-                  <div style="font-size:13.5px; font-weight:600;">{{ leg.name }}</div>
-                  <div style="font-family:var(--fm); font-size:10.5px; color:var(--tx3); margin-top:1px;">{{ leg.meta }}</div>
-                </div>
-                <div style="font-family:var(--fm); font-size:11px; color:var(--tx2);">{{ leg.km }}</div>
+          <div style="font-family:var(--fm); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--amber);">Source · destination · dates</div>
+          <div style="font-family:var(--fd); font-size:31px; line-height:1.15; margin-top:8px;">One generate, the whole trip</div>
+          <div style="font-size:13px; color:var(--tx2); margin-top:4px;">Every step below runs in a single transaction — a partial failure never leaves half a trip behind.</div>
+          <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; margin-top:20px; background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
+            <sc-for list="{{ heroSteps }}" as="step" hint-placeholder-count="12">
+              <div style="background:var(--surf); padding:10px 12px; display:flex; align-items:center; gap:9px;">
+                <span style="font-family:var(--fm); font-size:10px; color:var(--tx3); flex:none;">{{ step.n }}</span>
+                <span style="font-size:12.5px; line-height:1.35;">{{ step.label }}</span>
               </div>
             </sc-for>
           </div>
@@ -259,7 +234,7 @@
           <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
             <div>
               <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Full name</label>
-              <input value="{{ authName }}" onChange="{{ onAuthName }}" placeholder="Arjun Mehta" style="width:100%; background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:13px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+              <input value="{{ authName }}" onChange="{{ onAuthName }}" placeholder="Your full name" style="width:100%; background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:13px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
             </div>
           </sc-if>
           <div>
@@ -280,7 +255,6 @@
         </sc-if>
 
         <button onClick="{{ submitAuth }}" style="width:100%; margin-top:20px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:14px; font-size:14.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">{{ authCta }}</button>
-        <p style="font-size:12px; color:var(--tx3); margin:16px 0 0; text-align:center;">Demo account is pre-filled — just press {{ authCta }}.</p>
       </sc-if>
     </div>
   </div>
@@ -353,6 +327,7 @@
           </sc-for>
         </div>
 
+        <sc-if value="{{ hasTrips }}" hint-placeholder-val="{{ true }}">
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px,1fr)); gap:14px; margin-top:14px;">
           <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:18px;">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
@@ -387,7 +362,9 @@
             </div>
           </div>
         </div>
+        </sc-if>
 
+        <sc-if value="{{ hasActiveTrip }}" hint-placeholder-val="{{ true }}">
         <div style="margin-top:14px; border:1px solid var(--amber); background:var(--surf); border-radius:4px; padding:20px; display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:20px; align-items:center;">
           <div>
             <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--amber);">Next departure · in 128 days</div>
@@ -399,7 +376,9 @@
             <button onClick="{{ goMap }}" style="background:transparent; border:1px solid var(--line2); color:var(--tx); border-radius:4px; padding:11px 16px; font-size:13.5px; font-weight:600; cursor:pointer;" style-hover="background:var(--surf2);">Route map</button>
           </div>
         </div>
+        </sc-if>
 
+        <sc-if value="{{ hasRecs }}" hint-placeholder-val="{{ true }}">
         <div style="margin-top:22px;">
           <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-family:var(--fm); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--tx3);">Smart recommendations</span>
@@ -418,6 +397,15 @@
             </sc-for>
           </div>
         </div>
+        </sc-if>
+
+        <sc-if value="{{ noTripsAtAll }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:14px; border:1px dashed var(--line2); border-radius:4px; padding:56px 24px; text-align:center;">
+            <div style="font-family:var(--fd); font-size:28px;">No trips yet</div>
+            <p style="font-size:14px; color:var(--tx2); margin:10px auto 0; max-width:48ch;">Give it a source, a destination and dates. Contour builds the route, the day-by-day schedule, stays, food, budget and packing list.</p>
+            <button onClick="{{ startCreate }}" style="margin-top:22px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:13px 24px; font-size:14px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Create my first trip</button>
+          </div>
+        </sc-if>
       </div>
       </sc-if>
 
@@ -507,15 +495,15 @@
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:16px;">
               <div style="grid-column:1/-1;">
                 <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Trip name</label>
-                <input value="{{ dName }}" onChange="{{ onName }}" placeholder="Rinchenpong Winter Ride" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+                <input value="{{ dName }}" onChange="{{ onName }}" placeholder="Name this trip" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
               </div>
               <div>
                 <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Source</label>
-                <input value="{{ dSource }}" onChange="{{ onSource }}" placeholder="Kolkata" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+                <input value="{{ dSource }}" onChange="{{ onSource }}" placeholder="Where from?" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
               </div>
               <div>
                 <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Destination</label>
-                <input value="{{ dDest }}" onChange="{{ onDest }}" placeholder="Rinchenpong, Sikkim" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
+                <input value="{{ dDest }}" onChange="{{ onDest }}" placeholder="Where are you going?" style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
               </div>
               <div>
                 <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Start date</label>
@@ -597,7 +585,7 @@
             </div>
             <div style="margin-top:24px;">
               <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Additional requirements</label>
-              <textarea value="{{ dReq }}" onChange="{{ onReq }}" rows="3" placeholder="Two Royal Enfield 350s. Prefer homestays with secure parking and hot water." style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none; resize:vertical;" style-focus="border-color:var(--amber);"></textarea>
+              <textarea value="{{ dReq }}" onChange="{{ onReq }}" rows="3" placeholder="Anything the plan should account for — vehicles, accessibility, must-dos." style="width:100%; background:var(--surf2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; color:var(--tx); outline:none; resize:vertical;" style-focus="border-color:var(--amber);"></textarea>
             </div>
           </sc-if>
 
@@ -684,6 +672,7 @@
       </sc-if>
 
       <sc-if value="{{ sItin }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ hasDays }}" hint-placeholder-val="{{ true }}">
       <div style="max-width:1000px; margin:0 auto; animation:cFade .3s ease both;">
 
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
@@ -843,7 +832,17 @@
       </div>
       </sc-if>
 
+        <sc-if value="{{ noDays }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px dashed var(--line2); border-radius:4px; padding:56px 24px; text-align:center;">
+            <div style="font-family:var(--fd); font-size:26px;">No itinerary yet</div>
+            <p style="font-size:13.5px; color:var(--tx2); margin:10px auto 0; max-width:46ch;">Create a trip and generate it, and the day-by-day plan appears here with timings, distances and costs you can edit.</p>
+            <button onClick="{{ startCreate }}" style="margin-top:20px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:12px 22px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Create a trip</button>
+          </div>
+        </sc-if>
+      </sc-if>
+
       <sc-if value="{{ sMap }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ hasMap }}" hint-placeholder-val="{{ true }}">
       <div style="max-width:1000px; margin:0 auto; animation:cFade .3s ease both;">
         <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; overflow:hidden;">
           <div style="position:relative; height:440px; background:var(--surf2);">
@@ -911,7 +910,17 @@
       </div>
       </sc-if>
 
+        <sc-if value="{{ noMap }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px dashed var(--line2); border-radius:4px; padding:56px 24px; text-align:center;">
+            <div style="font-family:var(--fd); font-size:26px;">No route to draw</div>
+            <p style="font-size:13.5px; color:var(--tx2); margin:10px auto 0; max-width:46ch;">The map plots the legs of a generated trip — start, overnight halts, sightseeing and fuel stops.</p>
+            <button onClick="{{ startCreate }}" style="margin-top:20px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:12px 22px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Create a trip</button>
+          </div>
+        </sc-if>
+      </sc-if>
+
       <sc-if value="{{ sHotels }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ hasStays }}" hint-placeholder-val="{{ true }}">
       <div style="max-width:1060px; margin:0 auto; animation:cFade .3s ease both;">
         <sc-if value="{{ strict }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; align-items:flex-start; gap:10px; border:1px solid var(--amber); background:var(--amberq); border-radius:4px; padding:13px 15px;">
@@ -959,7 +968,17 @@
       </div>
       </sc-if>
 
+        <sc-if value="{{ noStays }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px dashed var(--line2); border-radius:4px; padding:56px 24px; text-align:center;">
+            <div style="font-family:var(--fd); font-size:26px;">No stays yet</div>
+            <p style="font-size:13.5px; color:var(--tx2); margin:10px auto 0; max-width:46ch;">Generate a trip and each overnight halt gets budget, mid-range and premium options, every one labelled with its source.</p>
+            <button onClick="{{ startCreate }}" style="margin-top:20px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:12px 22px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Create a trip</button>
+          </div>
+        </sc-if>
+      </sc-if>
+
       <sc-if value="{{ sFood }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ hasFood }}" hint-placeholder-val="{{ true }}">
       <div style="max-width:1060px; margin:0 auto; animation:cFade .3s ease both;">
         <div style="display:flex; align-items:flex-start; gap:10px; border:1px solid var(--amber); background:var(--amberq); border-radius:4px; padding:13px 15px;">
           <span style="font-family:var(--fm); font-size:13px; color:var(--amber);">✦</span>
@@ -1005,7 +1024,17 @@
       </div>
       </sc-if>
 
+        <sc-if value="{{ noFood }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px dashed var(--line2); border-radius:4px; padding:56px 24px; text-align:center;">
+            <div style="font-family:var(--fd); font-size:26px;">No food suggestions yet</div>
+            <p style="font-size:13.5px; color:var(--tx2); margin:10px auto 0; max-width:46ch;">Generate a trip and you get places to eat per halt, filtered to your food preference and price band.</p>
+            <button onClick="{{ startCreate }}" style="margin-top:20px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:12px 22px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Create a trip</button>
+          </div>
+        </sc-if>
+      </sc-if>
+
       <sc-if value="{{ sSee }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ hasSights }}" hint-placeholder-val="{{ true }}">
       <div style="max-width:1060px; margin:0 auto; animation:cFade .3s ease both;">
         <div style="border:1px solid var(--teal); background:var(--surf); border-radius:4px; padding:20px;">
           <div style="display:flex; align-items:center; gap:10px;">
@@ -1064,7 +1093,17 @@
       </div>
       </sc-if>
 
+        <sc-if value="{{ noSights }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px dashed var(--line2); border-radius:4px; padding:56px 24px; text-align:center;">
+            <div style="font-family:var(--fd); font-size:26px;">Nothing to see yet</div>
+            <p style="font-size:13.5px; color:var(--tx2); margin:10px auto 0; max-width:46ch;">Generate a trip and sightseeing is ordered by geography rather than rating, so you stop backtracking.</p>
+            <button onClick="{{ startCreate }}" style="margin-top:20px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:12px 22px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Create a trip</button>
+          </div>
+        </sc-if>
+      </sc-if>
+
       <sc-if value="{{ sBudget }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ hasBudget }}" hint-placeholder-val="{{ true }}">
       <div style="max-width:1000px; margin:0 auto; animation:cFade .3s ease both;">
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
           <sc-for list="{{ budgetTotals }}" as="t" hint-placeholder-count="4">
@@ -1128,7 +1167,17 @@
       </div>
       </sc-if>
 
+        <sc-if value="{{ noBudget }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px dashed var(--line2); border-radius:4px; padding:56px 24px; text-align:center;">
+            <div style="font-family:var(--fd); font-size:26px;">No budget yet</div>
+            <p style="font-size:13.5px; color:var(--tx2); margin:10px auto 0; max-width:46ch;">Generate a trip and eleven categories are estimated for you, each line editable and recalculated as you change it.</p>
+            <button onClick="{{ startCreate }}" style="margin-top:20px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:12px 22px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Create a trip</button>
+          </div>
+        </sc-if>
+      </sc-if>
+
       <sc-if value="{{ sExp }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ hasBudget }}" hint-placeholder-val="{{ true }}">
       <div style="max-width:1000px; margin:0 auto; animation:cFade .3s ease both;">
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
           <sc-for list="{{ expTotals }}" as="t" hint-placeholder-count="4">
@@ -1194,6 +1243,15 @@
       </div>
       </sc-if>
 
+        <sc-if value="{{ noExpenses }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px dashed var(--line2); border-radius:4px; padding:56px 24px; text-align:center;">
+            <div style="font-family:var(--fd); font-size:26px;">No expenses yet</div>
+            <p style="font-size:13.5px; color:var(--tx2); margin:10px auto 0; max-width:46ch;">Once a trip has a budget you can log what you actually spent against each category and watch the delta.</p>
+            <button onClick="{{ startCreate }}" style="margin-top:20px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:12px 22px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Create a trip</button>
+          </div>
+        </sc-if>
+      </sc-if>
+
       <sc-if value="{{ sPack }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:940px; margin:0 auto; animation:cFade .3s ease both;">
         <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; padding:18px;">
@@ -1210,6 +1268,12 @@
           </div>
         </div>
 
+        <sc-if value="{{ noPacking }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:14px; border:1px dashed var(--line2); border-radius:4px; padding:44px 24px; text-align:center;">
+            <div style="font-family:var(--fd); font-size:24px;">Nothing to pack yet</div>
+            <p style="font-size:13.5px; color:var(--tx2); margin:8px auto 0; max-width:44ch;">A generated trip brings a packing list built for the destination, the season and how you are travelling. You can also add items yourself above.</p>
+          </div>
+        </sc-if>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(270px,1fr)); gap:12px; margin-top:14px;">
           <sc-for list="{{ packCats }}" as="c" hint-placeholder-count="7">
             <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; overflow:hidden;">
@@ -1383,6 +1447,7 @@
       </sc-if>
 
       <sc-if value="{{ sAdmin }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ hasAdminData }}" hint-placeholder-val="{{ true }}">
       <div style="max-width:1000px; margin:0 auto; animation:cFade .3s ease both;">
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:1px; background:var(--surf); border:1px solid var(--line); border-radius:4px; overflow:hidden;">
           <sc-for list="{{ adminStats }}" as="a" hint-placeholder-count="4">
@@ -1443,6 +1508,15 @@
       </div>
       </sc-if>
 
+        <sc-if value="{{ noAdminData }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px dashed var(--line2); border-radius:4px; padding:56px 24px; text-align:center;">
+            <div style="font-family:var(--fd); font-size:26px;">Nothing to report</div>
+            <p style="font-size:13.5px; color:var(--tx2); margin:10px auto 0; max-width:46ch;">These figures are counted from your own trips. Create one and the breakdown fills in.</p>
+            <button onClick="{{ startCreate }}" style="margin-top:20px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:12px 22px; font-size:13.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Create a trip</button>
+          </div>
+        </sc-if>
+      </sc-if>
+
     </div>
   </main>
 
@@ -1491,21 +1565,21 @@ class Component extends DCLogic {
     view: 'landing', section: 'dashboard',
     theme: 'light',
     wide: typeof window !== 'undefined' ? window.innerWidth >= 900 : true,
-    authMode: 'login', authEmail: 'arjun@example.com', authPass: 'demo1234', authName: 'Arjun Mehta', authErr: '',
+    authMode: 'login', authEmail: '', authPass: '', authName: '', authErr: '',
     user: null,
     trips: [], days: [], acts: [], hotels: [], restos: [], sights: [], expenses: [], packing: [], checklist: [], places: [], routes: [], weather: [],
-    activeTripId: 't1',
+    activeTripId: null,
     sync: 'idle', toast: null,
     tripSearch: '', tripFilterMode: 'All modes', tripSort: 'Newest first',
     moreOpen: false,
     wizStep: 1, draft: null,
     genIdx: 0, genDone: false,
-    openDay: 'd1', dragId: null, dragOverId: null,
+    openDay: null, dragId: null, dragOverId: null,
     addingTo: null, actDraft: null,
     expTab: 'estimate', expForm: null,
     chat: [], chatInput: '', chatBusy: false,
     bike: { mileage: 35, fuelPrice: 106.5, tank: 12, bikes: 2 },
-    shareOn: false, shareToken: 'cnt_7hQ2xR8vLm4pZ',
+    shareOn: false, shareToken: 'cnt_' + Math.random().toString(36).slice(2, 15),
     exportOpen: false, savedFilter: 'All',
     optimizing: null,
   };
@@ -1563,179 +1637,28 @@ class Component extends DCLogic {
     setTimeout(() => this.setState({ ...d, sync: 'saved' }), 240);
   }
 
+  /* No pre-loaded data. The store starts empty and fills from what the user
+     actually creates; every section renders an empty state until it does. */
   seed() {
-    const T = (id, o) => Object.assign({ id, user_id: 'u1', currency: 'INR' }, o);
-    const trips = [
-      T('t1', { trip_name: 'Rinchenpong Winter Ride', source: 'Kolkata', destination: 'Rinchenpong, Sikkim', start_date: '2027-01-23', end_date: '2027-01-27', number_of_days: 5, number_of_nights: 4, travellers: 4, travel_mode: 'Bike', trip_type: 'Photography', budget_type: 'Moderate', budget_amount: 60000, food_preference: 'Local Food', hotel_preference: 'Homestay', interests: ['Mountains', 'Photography', 'Nature', 'Culture'], special_requirements: 'Two Royal Enfield 350s. Prefer homestays with secure parking and hot water.', total_distance: 1430, estimated_total_cost: 53240, status: 'Planned' }),
-      T('t2', { trip_name: 'Coastal Konkan Drive', source: 'Pune', destination: 'Gokarna, Karnataka', start_date: '2026-11-06', end_date: '2026-11-11', number_of_days: 6, number_of_nights: 5, travellers: 2, travel_mode: 'Car', trip_type: 'Couple', budget_type: 'Premium', budget_amount: 95000, food_preference: 'No Preference', hotel_preference: '4 Star', interests: ['Beaches', 'Food', 'Relaxation'], special_requirements: '', total_distance: 1180, estimated_total_cost: 87400, status: 'Completed' }),
-      T('t3', { trip_name: 'Spiti Circuit', source: 'Delhi', destination: 'Kaza, Himachal Pradesh', start_date: '2027-06-12', end_date: '2027-06-21', number_of_days: 10, number_of_nights: 9, travellers: 5, travel_mode: 'Mixed', trip_type: 'Adventure', budget_type: 'Moderate', budget_amount: 140000, food_preference: 'Vegetarian', hotel_preference: 'Homestay', interests: ['Mountains', 'Adventure', 'Photography', 'Spiritual'], special_requirements: 'Need acclimatisation days.', total_distance: 1620, estimated_total_cost: 126500, status: 'Draft' }),
-      T('t4', { trip_name: 'Hampi Heritage Weekend', source: 'Bengaluru', destination: 'Hampi, Karnataka', start_date: '2026-12-25', end_date: '2026-12-28', number_of_days: 4, number_of_nights: 3, travellers: 3, travel_mode: 'Train', trip_type: 'Friends', budget_type: 'Budget', budget_amount: 30000, food_preference: 'Vegetarian', hotel_preference: '3 Star', interests: ['History', 'Architecture', 'Photography'], special_requirements: '', total_distance: 690, estimated_total_cost: 24800, status: 'Planned' }),
-    ];
-
-    const days = [
-      { id: 'd1', trip_id: 't1', day_number: 1, date: '2027-01-23', title: 'Kolkata → Siliguri', location: 'Siliguri, West Bengal', summary: 'Long highway day on NH-12 and NH-27. Start before first light to clear the city, and keep the last 80 km before dark.', distance: 565, travel_time_minutes: 690, estimated_cost: 11850 },
-      { id: 'd2', trip_id: 't1', day_number: 2, date: '2027-01-24', title: 'Siliguri → Rinchenpong', location: 'Rinchenpong, West Sikkim', summary: 'The good day. Teesta valley, Coronation Bridge, then the climb through Jorethang to 1,700 m.', distance: 135, travel_time_minutes: 300, estimated_cost: 9400 },
-      { id: 'd3', trip_id: 't1', day_number: 3, date: '2027-01-25', title: 'Rinchenpong local circuit', location: 'Rinchenpong, West Sikkim', summary: 'No long riding. Sunrise on the ridge, monastery, Kathok lake, and golden hour back at the viewpoint.', distance: 62, travel_time_minutes: 180, estimated_cost: 7100 },
-      { id: 'd4', trip_id: 't1', day_number: 4, date: '2027-01-26', title: 'Rinchenpong → Malda', location: 'Malda, West Bengal', summary: 'Descend early while the ghat road is empty. Malda breaks the return into two sane halves.', distance: 330, travel_time_minutes: 480, estimated_cost: 8900 },
-      { id: 'd5', trip_id: 't1', day_number: 5, date: '2027-01-27', title: 'Malda → Kolkata', location: 'Kolkata, West Bengal', summary: 'Final run down NH-12. Easy pace, one long lunch, home before evening traffic.', distance: 338, travel_time_minutes: 420, estimated_cost: 5990 },
-    ];
-
-    const A = (id, day_id, order, st, en, name, type, loc, dur, dist, tt, cost, pri, desc, verified) =>
-      ({ id, day_id, activity_order: order, start_time: st, end_time: en, activity_name: name, activity_type: type, location: loc, duration_minutes: dur, distance_from_previous: dist, travel_time_minutes: tt, estimated_cost: cost, priority: pri, description: desc, verified: !!verified });
-
-    const acts = [
-      A('a1', 'd1', 1, '05:30', '06:00', 'Pre-ride check', 'prep', 'Kolkata', 30, 0, 0, 0, 'Must Visit', 'Tyre pressure, chain lube, luggage straps, documents in the tank bag.', false),
-      A('a2', 'd1', 2, '06:00', '09:15', 'Departure — Kolkata to Bardhaman stretch', 'travel', 'NH-12', 195, 110, 195, 0, 'Must Visit', 'Clear the city before traffic builds. Steady 55–60 km/h on the bike.', false),
-      A('a3', 'd1', 3, '09:15', '10:00', 'Breakfast halt', 'food', 'Palsit area, NH-19', 45, 0, 0, 720, 'Recommended', 'Highway dhaba stop. Budget ₹180 per person for parathas and tea.', false),
-      A('a4', 'd1', 4, '10:00', '13:15', 'Ride to Farakka', 'travel', 'NH-12', 195, 175, 195, 0, 'Must Visit', 'Fuel top-up before the Farakka barrage crossing.', false),
-      A('a5', 'd1', 5, '13:15', '14:15', 'Lunch and fuel stop', 'food', 'Farakka', 60, 0, 0, 1400, 'Recommended', 'Refuel both bikes here — the next reliable pump is past Dalkhola.', false),
-      A('a6', 'd1', 6, '14:15', '17:00', 'Farakka to Dalkhola', 'travel', 'NH-12 / NH-27', 165, 150, 165, 0, 'Must Visit', 'Truck-heavy section. Stay left, avoid overtaking blind.', false),
-      A('a7', 'd1', 7, '17:00', '17:30', 'Tea and stretch', 'rest', 'Dalkhola', 30, 0, 0, 260, 'Optional', 'Mandatory stop on a bike day this long. Loosen shoulders.', false),
-      A('a8', 'd1', 8, '17:30', '19:15', 'Final run into Siliguri', 'travel', 'NH-27', 105, 130, 105, 0, 'Must Visit', 'Last 40 km after dusk — use high-vis and keep the group tight.', false),
-      A('a9', 'd1', 9, '19:15', '20:15', 'Hotel check-in', 'stay', 'Siliguri', 60, 0, 0, 4400, 'Must Visit', 'Two twin rooms. Confirm covered parking when you book.', false),
-      A('a10', 'd1', 10, '20:15', '21:30', 'Dinner', 'food', 'Siliguri', 75, 0, 0, 1800, 'Recommended', 'Early dinner — tomorrow is the mountain day.', false),
-      A('a11', 'd1', 11, '21:30', '22:00', 'Route brief and rest', 'rest', 'Siliguri', 30, 0, 0, 0, 'Optional', 'Ten minutes on tomorrow\u2019s stops, then lights out.', false),
-
-      A('a12', 'd2', 1, '07:00', '07:45', 'Breakfast', 'food', 'Siliguri', 45, 0, 0, 900, 'Recommended', 'Eat properly. The climb has few good stops before Jorethang.', false),
-      A('a13', 'd2', 2, '07:45', '09:00', 'Siliguri → Sevoke', 'travel', 'NH-10', 75, 32, 75, 0, 'Must Visit', 'Enter the Teesta corridor. Road surface is good but wet in patches.', false),
-      A('a14', 'd2', 3, '09:00', '09:40', 'Coronation Bridge photo stop', 'sight', 'Sevoke', 40, 0, 0, 0, 'Must Visit', 'The arch over the Teesta. Park on the far side and walk back for the frame.', true),
-      A('a15', 'd2', 4, '09:40', '11:30', 'Teesta valley ride to Melli', 'travel', 'NH-10', 110, 38, 110, 0, 'Must Visit', 'Best riding of the trip. River on the right the whole way.', false),
-      A('a16', 'd2', 5, '11:30', '12:30', 'Lunch at Jorethang', 'food', 'Jorethang, South Sikkim', 60, 22, 45, 1200, 'Recommended', 'Last town-sized halt before the climb. Thukpa and momos.', false),
-      A('a17', 'd2', 6, '12:30', '14:45', 'Climb to Rinchenpong', 'travel', 'Jorethang → Rinchenpong', 135, 43, 135, 0, 'Must Visit', '43 km of switchbacks, roughly 1,400 m of gain. Ride it slow.', false),
-      A('a18', 'd2', 7, '14:45', '15:45', 'Homestay check-in', 'stay', 'Rinchenpong', 60, 0, 0, 4400, 'Must Visit', 'Ask for a ridge-facing room and confirm hot water timing.', false),
-      A('a19', 'd2', 8, '16:00', '17:20', 'Rinchenpong Monastery and sunset', 'sight', 'Rinchenpong', 80, 2, 8, 0, 'Must Visit', 'Sunset around 17:05 in late January. Be in position by 16:40.', true),
-      A('a20', 'd2', 9, '19:30', '20:45', 'Dinner at the homestay', 'food', 'Rinchenpong', 75, 0, 0, 1400, 'Recommended', 'Home-cooked Sikkimese set meal. Order at check-in.', false),
-
-      A('a21', 'd3', 1, '05:45', '07:15', 'Sunrise — Kanchenjunga from the ridge', 'sight', 'Rinchenpong ridge', 90, 3, 12, 0, 'Must Visit', 'First light on the range. Sunrise around 06:20. Carry a tripod and gloves.', true),
-      A('a22', 'd3', 2, '07:30', '08:30', 'Breakfast', 'food', 'Rinchenpong', 60, 0, 0, 900, 'Recommended', 'Back at the homestay. Warm up before heading out.', false),
-      A('a23', 'd3', 3, '09:15', '10:30', 'Rinchenpong Monastery interior', 'sight', 'Rinchenpong', 75, 2, 8, 0, 'Recommended', 'Quiet in the morning. Ask before photographing inside the hall.', true),
-      A('a24', 'd3', 4, '10:45', '12:15', 'Kathok Lake walk', 'sight', 'Kathok, Rinchenpong', 90, 4, 15, 0, 'Must Visit', 'Short forest walk to the sacred lake. Flat and easy.', true),
-      A('a25', 'd3', 5, '12:30', '13:45', 'Lunch', 'food', 'Rinchenpong', 75, 5, 15, 1600, 'Recommended', 'Local kitchen in the village. Vegetarian options available.', false),
-      A('a26', 'd3', 6, '14:30', '16:00', 'Pelling Skywalk detour', 'sight', 'Pelling', 90, 18, 45, 800, 'Optional', 'Glass skywalk facing the range. Drop it if the group is tired.', true),
-      A('a27', 'd3', 7, '16:30', '17:30', 'Golden hour at the viewpoint', 'sight', 'Rinchenpong', 60, 18, 45, 0, 'Must Visit', 'Golden hour 16:15–17:05. The best light of the trip.', true),
-      A('a28', 'd3', 8, '19:30', '20:45', 'Dinner and route brief', 'food', 'Rinchenpong', 75, 0, 0, 1400, 'Recommended', 'Plan the 05:30 descent over dinner.', false),
-
-      A('a29', 'd4', 1, '06:00', '06:30', 'Cold-start and load up', 'prep', 'Rinchenpong', 30, 0, 0, 0, 'Must Visit', 'Let the engines warm. Check brakes before a long descent.', false),
-      A('a30', 'd4', 2, '06:30', '09:00', 'Descent to Jorethang', 'travel', 'Rinchenpong → Jorethang', 150, 43, 150, 0, 'Must Visit', 'Empty road at this hour. Engine-brake, do not ride the discs.', false),
-      A('a31', 'd4', 3, '09:00', '09:45', 'Breakfast', 'food', 'Jorethang', 45, 0, 0, 800, 'Recommended', 'Refuel here too — cheaper than on NH-10.', false),
-      A('a32', 'd4', 4, '09:45', '12:30', 'Teesta valley to Siliguri', 'travel', 'NH-10', 165, 97, 165, 0, 'Must Visit', 'Same road, other direction. Watch for landslide repair crews.', false),
-      A('a33', 'd4', 5, '12:30', '13:30', 'Lunch at Siliguri bypass', 'food', 'Siliguri', 60, 0, 0, 1400, 'Recommended', 'Do not go into town — use the bypass and keep moving.', false),
-      A('a34', 'd4', 6, '13:30', '18:00', 'Siliguri → Malda', 'travel', 'NH-27 / NH-12', 270, 190, 270, 0, 'Must Visit', 'Longest single stretch of the return. One break at Dalkhola.', false),
-      A('a35', 'd4', 7, '18:00', '19:00', 'Hotel check-in', 'stay', 'Malda', 60, 0, 0, 3600, 'Must Visit', 'Business hotels near the station are the reliable option here.', false),
-      A('a36', 'd4', 8, '19:30', '20:45', 'Dinner', 'food', 'Malda', 75, 0, 0, 1600, 'Recommended', 'Nothing ambitious. Eat and sleep.', false),
-
-      A('a37', 'd5', 1, '07:00', '07:45', 'Breakfast and check-out', 'food', 'Malda', 45, 0, 0, 800, 'Recommended', 'Settle the bill the night before to save time.', false),
-      A('a38', 'd5', 2, '07:45', '11:30', 'Malda → Farakka → Murshidabad', 'travel', 'NH-12', 225, 175, 225, 0, 'Must Visit', 'Good tarmac. Cross Farakka before the truck queues form.', false),
-      A('a39', 'd5', 3, '11:30', '12:45', 'Lunch and last fuel stop', 'food', 'Berhampore', 75, 0, 0, 1600, 'Recommended', 'Long lunch — you have earned it.', false),
-      A('a40', 'd5', 4, '12:45', '16:30', 'Berhampore → Kolkata', 'travel', 'NH-12', 225, 163, 225, 0, 'Must Visit', 'Final leg. Aim to be inside the city before 17:00 traffic.', false),
-      A('a41', 'd5', 5, '16:30', '17:00', 'Arrival and odometer read', 'rest', 'Kolkata', 30, 0, 0, 0, 'Optional', 'Log the final distance so the next trip estimates better.', false),
-    ];
-
-    const routes = [
-      { id: 'r1', trip_id: 't1', route_order: 1, from_location: 'Kolkata', to_location: 'Siliguri', distance_km: 565, duration_minutes: 690, toll_estimate: 0, fuel_estimate: 32.3, fuel_cost: 3440, breaks: ['Palsit', 'Farakka', 'Dalkhola'], fuel_stops: ['Palsit', 'Farakka', 'Dalkhola'] },
-      { id: 'r2', trip_id: 't1', route_order: 2, from_location: 'Siliguri', to_location: 'Rinchenpong', distance_km: 135, duration_minutes: 300, toll_estimate: 0, fuel_estimate: 7.7, fuel_cost: 820, breaks: ['Coronation Bridge', 'Melli', 'Jorethang'], fuel_stops: ['Jorethang'] },
-      { id: 'r3', trip_id: 't1', route_order: 3, from_location: 'Rinchenpong', to_location: 'Local circuit', distance_km: 62, duration_minutes: 180, toll_estimate: 0, fuel_estimate: 3.5, fuel_cost: 380, breaks: ['Kathok Lake', 'Pelling'], fuel_stops: [] },
-      { id: 'r4', trip_id: 't1', route_order: 4, from_location: 'Rinchenpong', to_location: 'Malda', distance_km: 330, duration_minutes: 480, toll_estimate: 0, fuel_estimate: 18.9, fuel_cost: 2010, breaks: ['Jorethang', 'Siliguri bypass', 'Dalkhola'], fuel_stops: ['Jorethang', 'Siliguri'] },
-      { id: 'r5', trip_id: 't1', route_order: 5, from_location: 'Malda', to_location: 'Kolkata', distance_km: 338, duration_minutes: 420, toll_estimate: 0, fuel_estimate: 19.3, fuel_cost: 2060, breaks: ['Farakka', 'Berhampore'], fuel_stops: ['Farakka', 'Berhampore'] },
-    ];
-
-    const hotels = [
-      { id: 'h1', trip_id: 't1', location: 'Siliguri', hotel_name: 'Budget lodge near Sevoke Road', category: 'Budget', address: 'Sevoke Road corridor, Siliguri', price_per_night: 1600, rating: null, review_count: null, facilities: ['Covered parking', 'Hot water', 'Wi-Fi'], verified: false, note: 'Search this corridor on your booking app — several options in this band.' },
-      { id: 'h2', trip_id: 't1', location: 'Siliguri', hotel_name: 'Mid-range hotel, Hill Cart Road', category: 'Mid-Range', address: 'Hill Cart Road, Siliguri', price_per_night: 2600, rating: null, review_count: null, facilities: ['Secure parking', 'Restaurant', 'Room service', '24h check-in'], verified: false, note: 'Best availability band for a late arrival on a bike day.' },
-      { id: 'h3', trip_id: 't1', location: 'Siliguri', hotel_name: 'Premium business hotel near Pradhan Nagar', category: 'Premium', address: 'Pradhan Nagar, Siliguri', price_per_night: 4800, rating: null, review_count: null, facilities: ['Valet parking', 'Gym', 'Bar', 'Buffet breakfast'], verified: false, note: 'Overkill for one night unless you want a proper reset.' },
-      { id: 'h4', trip_id: 't1', location: 'Rinchenpong', hotel_name: 'Village homestay, ridge side', category: 'Budget', address: 'Rinchenpong village, West Sikkim', price_per_night: 1800, rating: null, review_count: null, facilities: ['Home-cooked meals', 'Bike parking', 'Bucket hot water'], verified: false, note: 'Homestays here often take phone bookings only. Call ahead.' },
-      { id: 'h5', trip_id: 't1', location: 'Rinchenpong', hotel_name: 'Mountain-view homestay with balcony rooms', category: 'Mid-Range', address: 'Rinchenpong, West Sikkim', price_per_night: 2800, rating: null, review_count: null, facilities: ['Kanchenjunga view', 'Meals included', 'Heater on request', 'Parking'], verified: false, note: 'Ridge-facing rooms are what you are paying for. Confirm the orientation.' },
-      { id: 'h6', trip_id: 't1', location: 'Rinchenpong', hotel_name: 'Boutique resort, Pelling side', category: 'Premium', address: 'Between Rinchenpong and Pelling', price_per_night: 6200, rating: null, review_count: null, facilities: ['Heated rooms', 'In-house restaurant', 'Terrace', 'Guided walks'], verified: false, note: 'Adds 20 minutes to every local leg. Worth it only for the room.' },
-      { id: 'h7', trip_id: 't1', location: 'Malda', hotel_name: 'Station-area business hotel', category: 'Mid-Range', address: 'Near Malda Town station', price_per_night: 1800, rating: null, review_count: null, facilities: ['Parking', 'Restaurant', 'Early check-in'], verified: false, note: 'One-night transit stop. Prioritise parking over anything else.' },
-    ];
-
-    const restos = [
-      { id: 'f1', trip_id: 't1', location: 'Palsit, NH-19', restaurant_name: 'Highway dhaba cluster', meal: 'Breakfast', cuisine: 'North Indian', price_range: '₹150–220 per person', rating: null, address: 'Palsit toll area', opening_hours: 'Most open 05:00–23:00', signature_dishes: 'Aloo paratha, chhole, masala chai', verified: false },
-      { id: 'f2', trip_id: 't1', location: 'Farakka', restaurant_name: 'Barrage-side eateries', meal: 'Lunch', cuisine: 'Bengali / North Indian', price_range: '₹250–400 per person', rating: null, address: 'NH-12 near Farakka barrage', opening_hours: 'Typically 10:00–22:00', signature_dishes: 'Rice-dal-fish thali, egg curry', verified: false },
-      { id: 'f3', trip_id: 't1', location: 'Siliguri', restaurant_name: 'Sevoke Road restaurant strip', meal: 'Dinner', cuisine: 'Multi-cuisine, Tibetan', price_range: '₹350–550 per person', rating: null, address: 'Sevoke Road, Siliguri', opening_hours: 'Typically 11:00–22:30', signature_dishes: 'Momos, thukpa, tandoori', verified: false },
-      { id: 'f4', trip_id: 't1', location: 'Jorethang', restaurant_name: 'Market-side Sikkimese kitchens', meal: 'Lunch', cuisine: 'Sikkimese / Nepali', price_range: '₹180–300 per person', rating: null, address: 'Jorethang bazaar', opening_hours: 'Typically 08:00–20:00', signature_dishes: 'Thukpa, pork momos, gundruk soup', verified: false },
-      { id: 'f5', trip_id: 't1', location: 'Rinchenpong', restaurant_name: 'Homestay kitchen (pre-ordered)', meal: 'Dinner', cuisine: 'Home-style Sikkimese', price_range: '₹300–400 per person', rating: null, address: 'Your homestay', opening_hours: 'Fixed sitting, usually 19:30', signature_dishes: 'Dal-bhat-tarkari, sel roti, churpi soup', verified: false },
-      { id: 'f6', trip_id: 't1', location: 'Rinchenpong', restaurant_name: 'Village tea shops', meal: 'Snacks', cuisine: 'Local', price_range: '₹60–120 per person', rating: null, address: 'Rinchenpong village centre', opening_hours: 'Daylight hours', signature_dishes: 'Butter tea, steamed momos, thenthuk', verified: false },
-      { id: 'f7', trip_id: 't1', location: 'Berhampore', restaurant_name: 'NH-12 lunch stops', meal: 'Lunch', cuisine: 'Bengali', price_range: '₹250–400 per person', rating: null, address: 'NH-12, Berhampore', opening_hours: 'Typically 10:30–22:00', signature_dishes: 'Bhetki fry, kosha mangsho, mishti', verified: false },
-    ];
-
-    const sights = [
-      { id: 's1', trip_id: 't1', name: 'Coronation Bridge', location: 'Sevoke', category: 'Architecture', description: 'Single-arch bridge over the Teesta, built 1941. The classic first frame of any Sikkim ride.', recommended_duration: 40, entry_fee: 0, opening_hours: 'Open road, all hours', best_time: '08:30–10:00 for side light', rating: null, priority: 'Must Visit', verified: true },
-      { id: 's2', trip_id: 't1', name: 'Rinchenpong Monastery', location: 'Rinchenpong', category: 'Spiritual', description: 'Nyingma monastery from 1730 on the ridge above the village. Wide view west toward Kanchenjunga.', recommended_duration: 75, entry_fee: 0, opening_hours: 'Generally daylight hours — confirm locally', best_time: 'Early morning, or 16:30 for sunset', rating: null, priority: 'Must Visit', verified: true },
-      { id: 's3', trip_id: 't1', name: 'Kathok Lake', location: 'Kathok, Rinchenpong', category: 'Nature', description: 'Small sacred lake reached by a short forest path. Quiet, reflective water in the morning.', recommended_duration: 90, entry_fee: 0, opening_hours: 'Daylight', best_time: '10:00–12:00', rating: null, priority: 'Must Visit', verified: true },
-      { id: 's4', trip_id: 't1', name: 'Rinchenpong ridge viewpoint', location: 'Rinchenpong', category: 'Photography', description: 'The sunrise and golden-hour spot. Unobstructed line to the range on a clear morning.', recommended_duration: 90, entry_fee: 0, opening_hours: 'All hours', best_time: 'Sunrise 06:20, golden hour 16:15', rating: null, priority: 'Must Visit', verified: true },
-      { id: 's5', trip_id: 't1', name: 'Pelling Skywalk', location: 'Pelling', category: 'Architecture', description: 'Glass-floored walkway above the Chenrezig statue, facing the range.', recommended_duration: 90, entry_fee: 200, opening_hours: 'Confirm seasonal timings before riding over', best_time: 'Late afternoon', rating: null, priority: 'Optional', verified: true },
-      { id: 's6', trip_id: 't1', name: 'Teesta valley scenic stretch', location: 'NH-10, Sevoke to Melli', category: 'Photography', description: '38 km of river-side riding. Pull-offs every few kilometres for elevated river frames.', recommended_duration: 110, entry_fee: 0, opening_hours: 'Ride in daylight only', best_time: '09:00–11:30', rating: null, priority: 'Must Visit', verified: true },
-    ];
-
-    const expenses = [
-      { id: 'e1', trip_id: 't1', category: 'Transportation', description: 'Fuel — both bikes, full trip', estimated_amount: 8710, actual_amount: 0, expense_date: '2027-01-23', payment_method: 'UPI', notes: '1,430 km at 35 km/l, ₹106.5/l, two bikes' },
-      { id: 'e2', trip_id: 't1', category: 'Toll', description: 'Tolls and vehicle entry', estimated_amount: 400, actual_amount: 0, expense_date: '2027-01-23', payment_method: 'Cash', notes: 'Two-wheelers are toll-exempt on most of this route' },
-      { id: 'e3', trip_id: 't1', category: 'Hotel', description: '4 nights × 2 rooms', estimated_amount: 17600, actual_amount: 0, expense_date: '2027-01-23', payment_method: 'Card', notes: 'Mid-range band' },
-      { id: 'e4', trip_id: 't1', category: 'Food', description: '5 days × 4 travellers', estimated_amount: 14000, actual_amount: 0, expense_date: '2027-01-23', payment_method: 'UPI', notes: '₹700 per person per day' },
-      { id: 'e5', trip_id: 't1', category: 'Activities', description: 'Entry fees and permits', estimated_amount: 3200, actual_amount: 0, expense_date: '2027-01-25', payment_method: 'Cash', notes: 'Skywalk, monastery donations, vehicle permit' },
-      { id: 'e6', trip_id: 't1', category: 'Parking', description: 'Hotel and attraction parking', estimated_amount: 900, actual_amount: 0, expense_date: '2027-01-23', payment_method: 'Cash', notes: '' },
-      { id: 'e7', trip_id: 't1', category: 'Local Transport', description: 'Shared jeeps where bikes are impractical', estimated_amount: 1500, actual_amount: 0, expense_date: '2027-01-25', payment_method: 'Cash', notes: '' },
-      { id: 'e8', trip_id: 't1', category: 'Miscellaneous', description: 'Spares, chain lube, first aid', estimated_amount: 2100, actual_amount: 0, expense_date: '2027-01-22', payment_method: 'Card', notes: '' },
-      { id: 'e9', trip_id: 't1', category: 'Emergency Buffer', description: '10% contingency', estimated_amount: 4830, actual_amount: 0, expense_date: '2027-01-23', payment_method: 'Card', notes: 'Breakdown, weather delay, medical' },
-    ];
-
-    const pk = (id, category, item_name, quantity, completed) => ({ id, trip_id: 't1', category, item_name, quantity, completed });
-    const packing = [
-      pk('p1', 'Documents', 'Driving licence + RC (originals)', 2, true),
-      pk('p2', 'Documents', 'Bike insurance + PUC', 2, true),
-      pk('p3', 'Documents', 'Photo ID for hotel check-in', 4, true),
-      pk('p4', 'Documents', 'Printed itinerary + emergency contacts', 1, false),
-      pk('p5', 'Clothing', 'Thermal base layers', 4, true),
-      pk('p6', 'Clothing', 'Riding jacket with armour', 2, true),
-      pk('p7', 'Clothing', 'Waterproof over-gloves', 4, false),
-      pk('p8', 'Clothing', 'Balaclava / neck warmer', 4, true),
-      pk('p9', 'Weather Items', 'Rain suit', 4, true),
-      pk('p10', 'Weather Items', 'Sunscreen SPF50 (high-altitude sun)', 1, false),
-      pk('p11', 'Weather Items', 'Lip balm and moisturiser', 2, true),
-      pk('p12', 'Electronics', 'Phone mount + USB charger on the bike', 2, true),
-      pk('p13', 'Electronics', 'Power bank 20,000 mAh', 2, true),
-      pk('p14', 'Electronics', 'Camera, spare batteries, tripod', 1, false),
-      pk('p15', 'Bike Gear', 'Puncture repair kit + tyre inflator', 1, true),
-      pk('p16', 'Bike Gear', 'Chain lube and basic tool roll', 1, true),
-      pk('p17', 'Bike Gear', 'Spare clutch and brake levers', 1, false),
-      pk('p18', 'Bike Gear', 'Bungee cords and dry bag', 4, true),
-      pk('p19', 'Toiletries', 'Quick-dry towel and toiletries', 4, false),
-      pk('p20', 'Travel Gear', 'First aid kit + altitude medication', 1, false),
-    ];
-
-    const checklist = [
-      { id: 'c1', trip_id: 't1', label: 'Homestays booked and confirmed by phone', done: true },
-      { id: 'c2', trip_id: 't1', label: 'Bikes serviced — chain, brakes, tyres', done: true },
-      { id: 'c3', trip_id: 't1', label: 'Documents scanned to cloud', done: true },
-      { id: 'c4', trip_id: 't1', label: 'Fuel plan checked against pump locations', done: true },
-      { id: 'c5', trip_id: 't1', label: 'Weather checked 48h before departure', done: false },
-      { id: 'c6', trip_id: 't1', label: 'Emergency contacts saved offline', done: true },
-      { id: 'c7', trip_id: 't1', label: 'Cash + UPI limits sorted', done: false },
-      { id: 'c8', trip_id: 't1', label: 'Offline maps downloaded for Sikkim', done: false },
-      { id: 'c9', trip_id: 't1', label: 'Packing completed', done: false },
-    ];
-
-    const places = [
-      { id: 'sp1', user_id: 'u1', name: 'Rinchenpong ridge viewpoint', location: 'West Sikkim', place_type: 'Photography', notes: 'Return in October for clearer air.' },
-      { id: 'sp2', user_id: 'u1', name: 'Mountain-view homestay, Rinchenpong', location: 'West Sikkim', place_type: 'Hotel', notes: 'Balcony rooms only. Book direct.' },
-      { id: 'sp3', user_id: 'u1', name: 'Market-side Sikkimese kitchen', location: 'Jorethang', place_type: 'Restaurant', notes: 'Pork momos. Cash only.' },
-      { id: 'sp4', user_id: 'u1', name: 'Coronation Bridge', location: 'Sevoke, WB', place_type: 'Attraction', notes: 'Side light before 10:00.' },
-      { id: 'sp5', user_id: 'u1', name: 'Teesta valley pull-offs', location: 'NH-10', place_type: 'Photography', notes: 'Third and fifth pull-off are the good ones.' },
-    ];
-
-    const weather = [
-      { day: 'd1', place: 'Siliguri', hi: 24, lo: 10, cond: 'Mostly clear', rain: 5, wind: 8, sunrise: '06:22', sunset: '17:12', alert: null },
-      { day: 'd2', place: 'Rinchenpong', hi: 13, lo: 3, cond: 'Clear, cold morning', rain: 5, wind: 11, sunrise: '06:21', sunset: '17:06', alert: 'Below 5 °C before 08:00 — black ice possible on shaded switchbacks.' },
-      { day: 'd3', place: 'Rinchenpong', hi: 14, lo: 2, cond: 'Clear', rain: 5, wind: 9, sunrise: '06:20', sunset: '17:07', alert: null },
-      { day: 'd4', place: 'Malda', hi: 25, lo: 11, cond: 'Haze, then clear', rain: 5, wind: 7, sunrise: '06:18', sunset: '17:15', alert: 'Dense morning fog is common on NH-12 in January until 09:00.' },
-      { day: 'd5', place: 'Kolkata', hi: 27, lo: 15, cond: 'Clear', rain: 5, wind: 9, sunrise: '06:15', sunset: '17:20', alert: null },
-    ];
-
     return {
-      trips, days, acts, routes, hotels, restos, sights, expenses, packing, checklist, places, weather,
-      user: { id: 'u1', full_name: 'Arjun Mehta', email: 'arjun@example.com', phone: '+91 98300 21144', default_currency: 'INR', preferred_mode: 'Bike', preferred_budget: 'Moderate', food_preference: 'Local Food' },
-      chat: [{ role: 'ai', text: 'I have the full trip loaded — route, five days, stays, budget and packing. Tell me what to change and I will rewrite only the parts that need it.' }],
+      trips: [], days: [], acts: [], routes: [], hotels: [], restos: [], sights: [],
+      expenses: [], packing: [], checklist: [], places: [], weather: [],
+      chat: [{ role: 'ai', text: 'Tell me where you are going and I will build the trip — route, days, stays, food, budget and packing. Create a trip first and I can edit any part of it.' }],
+    };
+  }
+
+  /* The signed-in user comes from the auth form, not from a fixture. */
+  makeUser(name, email) {
+    const fallback = (email || '').split('@')[0];
+    return {
+      id: 'u' + Date.now(),
+      full_name: (name || '').trim() || fallback || 'You',
+      email: email || '—',
+      phone: '—',
+      default_currency: 'INR',
+      preferred_mode: 'Not set',
+      preferred_budget: 'Not set',
+      food_preference: 'Not set',
     };
   }
 
@@ -1758,10 +1681,10 @@ class Component extends DCLogic {
     if (!authEmail.includes('@')) return this.setState({ authErr: 'Enter a valid email address.' });
     if (authPass.length < 8) return this.setState({ authErr: 'Password must be at least 8 characters.' });
     if (authMode === 'signup' && authName.trim().length < 2) return this.setState({ authErr: 'Enter your full name.' });
-    this.setState({ authErr: '', view: 'app', section: 'dashboard' });
+    this.setState({ authErr: '', view: 'app', section: 'dashboard', user: this.makeUser(authName, authEmail) });
     this.toast(authMode === 'signup' ? 'Account created · profile row inserted' : 'Signed in · session restored from cloud');
   };
-  googleAuth = () => { this.setState({ view: 'app', section: 'dashboard', authErr: '' }); this.toast('Signed in with Google'); };
+  googleAuth = () => { this.setState(s => ({ view: 'app', section: 'dashboard', authErr: '', user: this.makeUser('', s.authEmail) })); this.toast('Signed in with Google'); };
   sendReset = () => this.toast('Reset link sent to ' + this.state.authEmail);
 
   /* ---------- trips ---------- */
@@ -1867,25 +1790,50 @@ class Component extends DCLogic {
     const modeCount = {};
     s.trips.forEach(t => { modeCount[t.travel_mode] = (modeCount[t.travel_mode] || 0) + 1; });
     const topMode = Object.keys(modeCount).sort((a, b) => modeCount[b] - modeCount[a])[0] || '—';
-    const patterns = [
-      { label: 'Most-used travel mode', value: topMode, pct: '72%', fill: 'var(--amber)' },
-      { label: 'Favourite region', value: 'Himalaya', pct: '58%', fill: 'var(--teal)' },
-      { label: 'Average trip length', value: Math.round(s.trips.reduce((a, t) => a + t.number_of_days, 0) / Math.max(1, s.trips.length)) + ' days', pct: '44%', fill: 'var(--violet)' },
-      { label: 'Photography-led trips', value: '2 of ' + s.trips.length, pct: '50%', fill: 'var(--coral)' },
-    ];
+    /* Every figure below is computed from the user's own trips. With no trips
+       the list is empty and the panel shows its empty state. */
+    const share = (n, d) => Math.round((n / Math.max(1, d)) * 100) + '%';
+    const avgDays = s.trips.length
+      ? Math.round(s.trips.reduce((a, t) => a + t.number_of_days, 0) / s.trips.length) : 0;
+    const longestTrip = s.trips.reduce((m, t) => Math.max(m, t.number_of_days), 0);
+    const photoTrips = s.trips.filter(t => t.trip_type === 'Photography').length;
+    const patterns = s.trips.length ? [
+      { label: 'Most-used travel mode', value: topMode, pct: share(modeCount[topMode] || 0, s.trips.length), fill: 'var(--amber)' },
+      { label: 'Average trip length', value: avgDays + ' days', pct: share(avgDays, longestTrip), fill: 'var(--teal)' },
+      { label: 'Photography-led trips', value: photoTrips + ' of ' + s.trips.length, pct: share(photoTrips, s.trips.length), fill: 'var(--violet)' },
+      { label: 'Completed', value: completed + ' of ' + s.trips.length, pct: share(completed, s.trips.length), fill: 'var(--coral)' },
+    ] : [];
     const dashStats = [
       { label: 'Total trips', value: String(s.trips.length), sub: 'across all modes', tint: 'var(--tx)' },
       { label: 'Upcoming', value: String(upcoming), sub: 'next in 128 days', tint: 'var(--amber)' },
       { label: 'Completed', value: String(completed), sub: 'archived with actuals', tint: 'var(--teal)' },
       { label: 'Estimated spend', value: this.cur(totalSpend), sub: 'all trips combined', tint: 'var(--tx)' },
     ];
-    const recs = [
-      { kind: 'Nearby extension', tint: 'var(--teal)', body: 'One extra day gets you Yuksom and the Dubdi monastery trail — 38 km from Rinchenpong, and it fits before the Malda leg.', cta: 'Add day 6', apply: () => this.toast('Day added · itinerary and budget recalculated') },
-      { kind: 'Budget saving', tint: 'var(--amber)', body: 'Your Siliguri night sits in the premium band. Dropping to mid-range saves about ₹2,200 with no real change to the ride.', cta: 'Swap stay', apply: () => this.setState({ section: 'hotels' }) },
-      { kind: 'Time optimization', tint: 'var(--violet)', body: 'Kathok Lake and the monastery are 2 km apart. Visiting them back-to-back on day 3 frees 45 minutes.', cta: 'Reorder day 3', apply: () => this.setState({ section: 'itinerary', openDay: 'd3' }) },
-      { kind: 'Weather adjustment', tint: 'var(--coral)', body: 'Day 2 drops below 5 °C before 08:00. Shift departure to 08:30 so the shaded switchbacks have thawed.', cta: 'Shift departure', apply: () => this.setState({ section: 'itinerary', openDay: 'd2' }) },
-      { kind: 'Rest recommendation', tint: 'var(--amber)', body: 'Day 1 is 565 km — the longest of the trip. A third break near Malda would cut 90 minutes of continuous riding.', cta: 'Add rest stop', apply: () => this.setState({ section: 'itinerary', openDay: 'd1' }) },
-    ];
+    /* Recommendations are read off the trip, not invented. Each one only
+       appears when the condition that justifies it is actually true. */
+    const recs = [];
+    if (active) {
+      const cap = Number(active.budget_amount) || 0;
+      const est = Number(active.estimated_total_cost) || 0;
+      if (cap && est > cap) recs.push({
+        kind: 'Budget', tint: 'var(--coral)',
+        body: 'Estimated at ' + this.cur(est) + ', which is ' + this.cur(est - cap) + ' over your ' + this.cur(cap) + ' cap.',
+        cta: 'Open budget', apply: () => this.setState({ section: 'budget' }),
+      });
+      const tripDays = s.days.filter(d => d.trip_id === active.id);
+      const longestDay = tripDays.slice().sort((a, b) => (b.distance || 0) - (a.distance || 0))[0];
+      if (longestDay && longestDay.distance > 400) recs.push({
+        kind: 'Rest', tint: 'var(--amber)',
+        body: 'Day ' + longestDay.day_number + ' covers ' + Math.round(longestDay.distance) + ' km, the longest of the trip. An extra break would shorten the continuous run.',
+        cta: 'Open day', apply: () => this.setState({ section: 'itinerary', openDay: longestDay.id }),
+      });
+      const alertDay = tripDays.find(d => (s.weather.find(w => w.day === d.id) || {}).alert);
+      if (alertDay) recs.push({
+        kind: 'Weather', tint: 'var(--violet)',
+        body: (s.weather.find(w => w.day === alertDay.id) || {}).alert,
+        cta: 'Open day', apply: () => this.setState({ section: 'itinerary', openDay: alertDay.id }),
+      });
+    }
 
     const features = [
       ['01', 'AI Itinerary', 'A day-by-day plan with realistic timings, buffers and one thing at a time.', 'var(--amber)'],
@@ -1899,13 +1847,9 @@ class Component extends DCLogic {
       ['09', 'Packing List', 'Destination and mode specific, with a progress count you tick off.', 'var(--coral)'],
     ].map(([num, title, body, tint]) => ({ num, title, body, tint }));
 
-    const heroLegs = [
-      { name: 'Kolkata → Siliguri', meta: '11h 30m · 3 breaks', km: '565 km', dot: 'var(--amber)' },
-      { name: 'Siliguri → Rinchenpong', meta: '5h 00m · Teesta valley', km: '135 km', dot: 'var(--teal)' },
-      { name: 'Rinchenpong local circuit', meta: '3h 00m · sunrise + monastery', km: '62 km', dot: 'var(--teal)' },
-      { name: 'Rinchenpong → Malda', meta: '8h 00m · early descent', km: '330 km', dot: 'var(--amber)' },
-      { name: 'Malda → Kolkata', meta: '7h 00m · easy pace', km: '338 km', dot: 'var(--amber)' },
-    ];
+    /* The landing card illustrates the real generation pipeline rather than a
+       made-up trip, so nothing on the page is invented. */
+    const heroSteps = this.genSteps.map((label, i) => ({ n: String(i + 1).padStart(2, '0'), label }));
 
     return {
       vLanding: s.view === 'landing', vAuth: s.view === 'auth', vApp: s.view === 'app',
@@ -1919,7 +1863,7 @@ class Component extends DCLogic {
       logout: this.logout, startCreate: this.startCreate, goItinerary: this.goItinerary, goMap: this.goMap,
       closeMore: this.closeMore, moreOpen: s.moreOpen,
 
-      features, heroLegs,
+      features, heroSteps,
 
       authReset: s.authMode === 'reset', authForm: s.authMode !== 'reset', isSignup: s.authMode === 'signup',
       authTitle: s.authMode === 'signup' ? 'Create your account' : 'Welcome back',
@@ -1944,6 +1888,9 @@ class Component extends DCLogic {
 
       sDash: s.section === 'dashboard', sTrips: s.section === 'trips',
       dashStats, spendBars, patterns, recs,
+      hasTrips: s.trips.length > 0, noTripsAtAll: s.trips.length === 0,
+      hasRecs: recs.length > 0, hasPatterns: patterns.length > 0,
+      hasActiveTrip: !!active,
       activeTripTitle: active ? active.source + ' → ' + active.destination : '—',
       activeTripMeta: active ? fmt(active.start_date) + ' – ' + fmt(active.end_date) + ' · ' + active.number_of_days + ' days · ' + (modeLabels[active.travel_mode] || '') + ' · ' + active.travellers + ' travellers' : '',
 
@@ -2224,32 +2171,49 @@ class Component extends DCLogic {
       });
     });
 
-    /* map projection from real coordinates */
-    const pts = [
-      { name: 'Kolkata', lat: 22.5726, lng: 88.3639, kind: 'End', tint: 'var(--amber)' },
-      { name: 'Berhampore', lat: 24.0996, lng: 88.2518, kind: 'Break', tint: 'var(--tx3)' },
-      { name: 'Farakka', lat: 24.8167, lng: 87.9167, kind: 'Fuel', tint: 'var(--tx3)' },
-      { name: 'Malda', lat: 25.0119, lng: 88.1433, kind: 'Night 4', tint: 'var(--violet)' },
-      { name: 'Siliguri', lat: 26.7271, lng: 88.3953, kind: 'Night 1', tint: 'var(--violet)' },
-      { name: 'Sevoke', lat: 26.8944, lng: 88.4722, kind: 'Sight', tint: 'var(--teal)' },
-      { name: 'Jorethang', lat: 27.1083, lng: 88.3236, kind: 'Fuel', tint: 'var(--tx3)' },
-      { name: 'Rinchenpong', lat: 27.2478, lng: 88.2492, kind: 'Nights 2–3', tint: 'var(--teal)' },
-    ];
-    const lats = pts.map(p => p.lat), lngs = pts.map(p => p.lng);
-    const minLat = Math.min(...lats) - .25, maxLat = Math.max(...lats) + .25;
-    const minLng = Math.min(...lngs) - .3, maxLng = Math.max(...lngs) + .3;
-    const px = p => ((p.lng - minLng) / (maxLng - minLng)) * 100;
-    const py = p => (1 - (p.lat - minLat) / (maxLat - minLat)) * 100;
-    // The four northern waypoints sit within ~0.5 degrees of each other, so their
-    // labels go on alternating sides of the marker to stop them colliding.
-    const leftLabel = { Rinchenpong: true, Siliguri: true };
-    const mapPts = pts.map(p => Object.assign({}, p, {
-      left: px(p).toFixed(2) + '%', top: py(p).toFixed(2) + '%',
-      dir: leftLabel[p.name] ? 'row-reverse' : 'row',
-      tf: leftLabel[p.name] ? 'translate(calc(-100% + 5.5px),-50%)' : 'translate(-5.5px,-50%)',
-    }));
-    const order = ['Kolkata', 'Berhampore', 'Farakka', 'Malda', 'Siliguri', 'Sevoke', 'Jorethang', 'Rinchenpong'];
-    const poly = order.map(n => { const p = pts.find(x => x.name === n); return px(p).toFixed(2) + ',' + py(p).toFixed(2); }).join(' ');
+    /* Waypoints come from the trip's own route legs. Rows carry latitude and
+       longitude once a routing provider has filled them in; until then there
+       are no coordinates to project, so the legs are laid out evenly along the
+       panel. Either way the UI labels it a schematic projection. */
+    const legs = s.routes.slice().sort((a, b) => a.route_order - b.route_order);
+    const stops = [];
+    legs.forEach((r, i) => {
+      if (i === 0) stops.push({ name: r.from_location, kind: 'Start', tint: 'var(--amber)' });
+      stops.push({
+        name: r.to_location,
+        kind: i === legs.length - 1 ? 'End' : 'Stop ' + (i + 1),
+        tint: i === legs.length - 1 ? 'var(--amber)' : 'var(--violet)',
+        lat: r.to_lat, lng: r.to_lng,
+      });
+    });
+    if (legs.length && legs[0].from_lat != null) {
+      stops[0].lat = legs[0].from_lat; stops[0].lng = legs[0].from_lng;
+    }
+
+    const geo = stops.length > 1 && stops.every(p => p.lat != null && p.lng != null);
+    let px, py;
+    if (geo) {
+      const lats = stops.map(p => p.lat), lngs = stops.map(p => p.lng);
+      const minLat = Math.min(...lats) - .25, maxLat = Math.max(...lats) + .25;
+      const minLng = Math.min(...lngs) - .3, maxLng = Math.max(...lngs) + .3;
+      px = p => ((p.lng - minLng) / (maxLng - minLng)) * 100;
+      py = p => (1 - (p.lat - minLat) / (maxLat - minLat)) * 100;
+    } else {
+      // No coordinates yet: space the stops down the panel so the order still reads.
+      px = (p, i) => 18 + (i % 2) * 46;
+      py = (p, i) => stops.length < 2 ? 50 : 8 + (i / (stops.length - 1)) * 84;
+    }
+    const mapPts = stops.map((p, i) => {
+      const left = px(p, i), top = py(p, i);
+      const flip = left > 55;
+      return Object.assign({}, p, {
+        left: left.toFixed(2) + '%', top: top.toFixed(2) + '%',
+        dir: flip ? 'row-reverse' : 'row',
+        tf: flip ? 'translate(calc(-100% + 5.5px),-50%)' : 'translate(-5.5px,-50%)',
+      });
+    });
+    const poly = stops.map((p, i) => px(p, i).toFixed(2) + ',' + py(p, i).toFixed(2)).join(' ');
+    const hasMap = stops.length > 0;
 
     const routeLegs = s.routes.map(r => Object.assign({}, r, {
       title: r.from_location + ' → ' + r.to_location,
@@ -2263,7 +2227,8 @@ class Component extends DCLogic {
 
     const catGroups = ['Budget', 'Mid-Range', 'Premium'];
     const hotelByLoc = [];
-    ['Siliguri', 'Rinchenpong', 'Malda'].forEach(loc => {
+    // Group by whatever halts the trip actually has, in the order they appear.
+    s.hotels.map(h => h.location).filter((v, i, a) => a.indexOf(v) === i).forEach(loc => {
       const items = s.hotels.filter(h => h.location === loc);
       if (items.length) hotelByLoc.push({
         loc, count: items.length + ' options',
@@ -2296,18 +2261,29 @@ class Component extends DCLogic {
       save: () => this.save('Saved to your places', st => ({ places: st.places.concat({ id: 'sp' + Date.now(), user_id: 'u1', name: x.name, location: x.location, place_type: 'Attraction', notes: '' }) })),
     }));
 
-    const photoSpots = [
-      ['Sunrise', 'Rinchenpong ridge', '05:45–06:40', 'Day 3 · first light on the range'],
-      ['Golden hour', 'Rinchenpong viewpoint', '16:15–17:05', 'Day 3 · warmest side light'],
-      ['Sunset', 'Above the monastery', '16:40–17:10', 'Day 2 · silhouette of the prayer flags'],
-      ['Scenic road', 'Teesta valley, NH-10', '09:00–11:30', 'Day 2 · elevated river frames'],
-      ['Architecture', 'Coronation Bridge', '08:30–10:00', 'Day 2 · side light on the arch'],
-      ['Night sky', 'Rinchenpong ridge', '20:00–22:00', 'Day 2 or 3 · low light pollution, cold and clear'],
-    ].map(([kind, place, time, note]) => ({ kind, place, time, note }));
+    /* The light schedule is built from the trip's own photography-priority
+       sights and the per-day sunrise/sunset the weather service returned.
+       Nothing to show until a generated trip provides both. */
+    const photoSpots = s.sights
+      .filter(x => x.category === 'Photography' || x.priority === 'Must Visit')
+      .slice(0, 6)
+      .map(x => {
+        const day = s.days.find(d => d.location && x.location && d.location.indexOf(x.location) === 0);
+        const w = day ? s.weather.find(q => q.day === day.id) : null;
+        return {
+          kind: x.category || 'Sight',
+          place: x.name,
+          time: x.best_time || (w ? '↑ ' + w.sunrise + ' ↓ ' + w.sunset : 'Timing not set'),
+          note: day ? 'Day ' + day.day_number + ' · ' + (x.location || '') : (x.location || ''),
+        };
+      });
 
     const bike = s.bike;
-    const totalKm = active ? active.total_distance : 0;
+    const totalKm = active ? (active.total_distance || 0) : 0;
     const fuelL = totalKm / bike.mileage;
+    const longestRide = s.days
+      .filter(d => !active || d.trip_id === active.id)
+      .slice().sort((a, b) => (b.distance || 0) - (a.distance || 0))[0];
     return {
       sItin: s.section === 'itinerary', sMap: s.section === 'map', sHotels: s.section === 'hotels',
       sFood: s.section === 'restaurants', sSee: s.section === 'sightseeing',
@@ -2323,8 +2299,19 @@ class Component extends DCLogic {
       draftLoc: s.actDraft ? s.actDraft.location : '', draftCost: s.actDraft ? s.actDraft.estimated_cost : 0,
       draftType: s.actDraft ? s.actDraft.activity_type : 'sight',
       mapPts, mapPoly: poly, routeLegs,
-      mapsUrl: 'https://www.google.com/maps/dir/Kolkata/Siliguri/Rinchenpong/Malda/Kolkata',
+      // Built from this trip's stops, so the deep link matches what is on screen.
+      mapsUrl: stops.length > 1
+        ? 'https://www.google.com/maps/dir/' + stops.map(p => encodeURIComponent(p.name)).join('/')
+        : '',
       hotelByLoc, restoGroups, sightList, photoSpots,
+      hasMap, noMap: !hasMap,
+      hasDays: itinDays.length > 0, noDays: itinDays.length === 0,
+      hasStays: hotelByLoc.length > 0, noStays: hotelByLoc.length === 0,
+      hasFood: restoGroups.length > 0, noFood: restoGroups.length === 0,
+      hasSights: sightList.length > 0, noSights: sightList.length === 0,
+      hasPhotoSpots: photoSpots.length > 0,
+      hasWeather: s.weather.length > 0,
+      isBikeTrip: !!active && active.travel_mode === 'Bike',
       bikeMileage: bike.mileage, bikeFuelPrice: bike.fuelPrice, bikeTank: bike.tank, bikeCount: bike.bikes,
       onMileage: e => this.setState({ bike: Object.assign({}, bike, { mileage: Number(e.target.value) || 1 }) }),
       onFuelPrice: e => this.setState({ bike: Object.assign({}, bike, { fuelPrice: Number(e.target.value) || 0 }) }),
@@ -2335,8 +2322,10 @@ class Component extends DCLogic {
         { label: 'Fuel required', value: (fuelL * bike.bikes).toFixed(1) + ' L' },
         { label: 'Fuel cost', value: this.cur(fuelL * bike.fuelPrice * bike.bikes) },
         { label: 'Range per tank', value: Math.round(bike.tank * bike.mileage) + ' km' },
-        { label: 'Refuels needed', value: Math.ceil(fuelL / bike.tank) + ' per bike' },
-        { label: 'Longest riding day', value: '565 km · 11h 30m' },
+        { label: 'Refuels needed', value: (totalKm ? Math.ceil(fuelL / bike.tank) : 0) + ' per bike' },
+        { label: 'Longest riding day', value: longestRide
+            ? Math.round(longestRide.distance) + ' km · ' + dur(longestRide.travel_time_minutes)
+            : '—' },
       ],
       weatherDays: s.weather.map((w, i) => ({
         place: w.place, cond: w.cond, hi: w.hi + '°', lo: w.lo + '°',
@@ -2386,12 +2375,16 @@ class Component extends DCLogic {
       return { cat: c, pct, from, to: acc, tint: tints[i % tints.length] };
     });
     const conic = slices.map(x => x.tint + ' ' + x.from.toFixed(2) + '% ' + x.to.toFixed(2) + '%').join(', ');
-    const budgetCap = active ? active.budget_amount : 0;
+    const budgetCap = active ? (active.budget_amount || 0) : 0;
     const overBudget = est > budgetCap && budgetCap > 0;
 
     return {
       sBudget: s.section === 'budget', sExp: s.section === 'expenses',
-      donut: 'conic-gradient(' + conic + ')',
+      hasBudget: s.expenses.length > 0, noBudget: s.expenses.length === 0,
+      noExpenses: s.expenses.length === 0,
+      // conic-gradient() with no stops is invalid CSS and paints nothing, so an
+      // empty budget falls back to a flat ring.
+      donut: slices.length ? 'conic-gradient(' + conic + ')' : 'var(--surf3)',
       budgetLegend: slices.map(x => ({
         cat: x.cat, tint: x.tint, pct: x.pct.toFixed(0) + '%', amount: this.cur(byCat[x.cat]),
       })),
@@ -2477,43 +2470,91 @@ class Component extends DCLogic {
     const t = s.trips.find(x => x.id === s.activeTripId);
     return JSON.stringify({ trip: t, days: s.days.map(d => ({ day: d.day_number, title: d.title, distance: d.distance, acts: this.actsFor(d.id).map(a => a.start_time + ' ' + a.activity_name) })) });
   }
+  /* Offline fallback when window.claude is unavailable. It answers from the
+     trip that is actually loaded rather than from a scripted example, and says
+     so plainly when there is no trip yet. */
   localReply(text) {
     const q = text.toLowerCase();
+    const st = this.state;
+    const trip = st.trips.find(t => t.id === st.activeTripId) || st.trips[0] || null;
+
+    if (!trip) {
+      return 'There is no trip loaded yet, so there is nothing for me to change. '
+        + 'Create one with + New trip — source, destination and dates are all I need — '
+        + 'and I can then reorder days, swap stays, shift departure times, rebalance the '
+        + 'budget or extend it.';
+    }
+
+    const days = st.days.filter(d => d.trip_id === trip.id).sort((a, b) => a.day_number - b.day_number);
+    const where = trip.source + ' to ' + trip.destination;
+    const longest = days.slice().sort((a, b) => (b.distance || 0) - (a.distance || 0))[0];
+
     if (q.includes('photograph') || q.includes('sunrise') || q.includes('sunset')) {
-      this.save(null, s => {
-        const acts = s.acts.concat({ id: 'a' + Date.now(), day_id: 'd2', activity_order: 99, start_time: '20:00', end_time: '21:30', activity_name: 'Night sky session on the ridge', activity_type: 'sight', location: 'Rinchenpong ridge', duration_minutes: 90, distance_from_previous: 3, travel_time_minutes: 12, estimated_cost: 0, priority: 'Recommended', description: 'Low light pollution at 1,700 m. Clear late-January skies are likely but cold — plan for 2 °C.', verified: false });
-        return Object.assign({ acts }, this.recalc({ days: s.days, acts }));
-      });
-      return 'Added a night-sky session to day 2 at 20:00 on the ridge, and day 3 already opens with sunrise at 05:45. Both are in the photography module now. Check the Sightseeing tab for the full golden-hour list.';
+      const spots = st.sights.filter(x => x.category === 'Photography' || x.priority === 'Must Visit');
+      return spots.length
+        ? 'This trip has ' + spots.length + ' place' + (spots.length === 1 ? '' : 's')
+          + ' worth shooting: ' + spots.slice(0, 3).map(x => x.name).join(', ')
+          + '. The Sightseeing tab has the light schedule for each.'
+        : 'No sightseeing rows on this trip yet, so I have no light schedule to work from. '
+          + 'Generate the trip and I can place sunrise and golden hour around the stops.';
     }
-    if (q.includes('tiring') || q.includes('less') && q.includes('day 2')) {
-      return 'Day 2 is only 135 km but five hours of it is climbing. I would move departure from 07:45 to 08:30 so the shaded switchbacks have thawed, and drop the Pelling detour on day 3 instead — that gives you a genuine rest afternoon without losing the monastery or the lake.';
+    if (q.includes('cheaper') || q.includes('budget') || q.includes('reduce') || q.includes('cost')) {
+      this.setState({ section: 'budget' });
+      const est = Number(trip.estimated_total_cost) || 0;
+      const cap = Number(trip.budget_amount) || 0;
+      return est
+        ? 'This trip estimates at ' + this.cur(est) + (cap ? ' against a ' + this.cur(cap) + ' cap' : '')
+          + '. The budget tab breaks that down by category and every line is editable — '
+          + 'change a number and the totals recalculate.'
+        : 'No costs are estimated on this trip yet. Add expense lines on the Budget tab, or '
+          + 'generate the trip and I will populate them.';
     }
-    if (q.includes('cheaper') || q.includes('budget') || q.includes('reduce')) {
-      this.setState({ section: 'hotels' });
-      return 'Two levers. Swap the Siliguri premium night for the mid-range band — about ₹2,200 back for one transit night you will barely see. And book the Rinchenpong homestay direct by phone rather than through an aggregator. Both are on the Stays tab. Prices there are estimates, so confirm before booking.';
-    }
-    if (q.includes('vegetarian') || q.includes('veg ')) {
-      this.setState({ section: 'restaurants' });
-      return 'Every halt on this route has reliable vegetarian options — dal-bhat-tarkari in Sikkim, thalis on NH-12. I have set the food filter to show those first. The specific kitchens listed are AI suggestions by area, not verified businesses, so treat them as where to look rather than where to book.';
-    }
-    if (q.includes('add') && q.includes('day')) {
-      return 'One extra day fits best after day 3: Yuksom and the Dubdi monastery trail, 38 km from Rinchenpong. That pushes the return to a Malda night on the 27th and adds roughly ₹6,400 for four people. Say the word and I will insert it and recalculate the budget.';
-    }
-    if (q.includes('family')) {
-      return 'For a family version I would cut the 565 km day 1 in half with a Malda night, drop the bikes for a car, and replace the ridge sunrise with a 07:30 start. That turns a five-day ride into a six-day drive with no day over 300 km.';
+    if (q.includes('tiring') || q.includes('rest') || q.includes('break')) {
+      return longest && longest.distance
+        ? 'Day ' + longest.day_number + ' is the heavy one at ' + Math.round(longest.distance)
+          + ' km. Shifting departure earlier or adding a break would take the edge off it.'
+        : 'No per-day distances on this trip yet, so I cannot tell you which day is hardest.';
     }
     if (q.includes('hotel') || q.includes('stay')) {
       this.setState({ section: 'hotels' });
-      return 'Three bands per halt are on the Stays tab. For Rinchenpong the mid-range homestay is the right call — ridge-facing rooms are the whole point of being there. All of it is AI-suggested by area and price band; nothing is a confirmed booking.';
+      return st.hotels.length
+        ? st.hotels.length + ' stays are listed across ' + where
+          + '. All of them are AI suggestions by area and price band, not confirmed bookings — '
+          + 'verify before you book.'
+        : 'No stays on this trip yet. Generate it and I will suggest a price band per halt, '
+          + 'clearly marked as unverified.';
+    }
+    if (q.includes('vegetarian') || q.includes('veg ') || q.includes('food') || q.includes('eat')) {
+      this.setState({ section: 'restaurants' });
+      return st.restos.length
+        ? st.restos.length + ' places to eat are listed, matched to your '
+          + (trip.food_preference || 'food') + ' preference. They are areas and price bands, '
+          + 'not verified businesses.'
+        : 'No food suggestions on this trip yet. Your preference is set to '
+          + (trip.food_preference || 'No Preference') + ', and I will filter to it when the trip is generated.';
     }
     if (q.includes('weather') || q.includes('rain')) {
-      return 'Late January in West Sikkim is the dry, clear season — good for the range, hard on the hands. Expect 2–3 °C before 08:00 at Rinchenpong and fog on NH-12 near Malda. These are climate normals, not a live forecast; the live call happens 48 hours out.';
+      return st.weather.length
+        ? 'Weather is loaded for ' + st.weather.length + ' day' + (st.weather.length === 1 ? '' : 's')
+          + '. Anything more than 48 hours out is climate normals rather than a live forecast.'
+        : 'No forecast on this trip yet. The live call runs 48 hours before departure; before that '
+          + 'you get climate normals for the dates and locations.';
     }
-    if (q.includes('route') || q.includes('bike')) {
-      return 'The route is already bike-shaped: NH-12 to Siliguri, NH-10 up the Teesta, then the Jorethang climb. The one change I would make is refuelling at Jorethang on both the way up and the way down — pump density above it is thin and the reserve on a 350 is optimistic.';
+    if (q.includes('day') && (q.includes('add') || q.includes('extend'))) {
+      return 'This trip runs ' + trip.number_of_days + ' days, ' + where
+        + '. Tell me where the extra day should sit and I will insert it and recalculate the budget.';
     }
-    return 'I can restructure days, swap stays, shift departure times, add or remove activities, rebalance the budget or extend the trip — and I write the change straight back to the trip. Tell me what should be different and I will only touch the parts that need it.';
+    if (q.includes('route') || q.includes('map')) {
+      this.setState({ section: 'map' });
+      return st.routes.length
+        ? st.routes.length + ' legs are planned for ' + where + ', '
+          + Math.round(trip.total_distance || 0) + ' km total. Distances are estimates until the '
+          + 'routing API returns a polyline.'
+        : 'No route legs on this trip yet, so the map has nothing to draw.';
+    }
+    return 'I have ' + trip.trip_name + ' loaded — ' + where + ', ' + trip.number_of_days
+      + ' days. I can restructure days, swap stays, shift departure times, add or remove '
+      + 'activities, rebalance the budget or extend it. Tell me what should be different.';
   }
 
   miscVals(active) {
@@ -2546,6 +2587,8 @@ class Component extends DCLogic {
       sPack: s.section === 'packing', sPlaces: s.section === 'places',
       sChat: s.section === 'assistant', sProfile: s.section === 'profile', sAdmin: s.section === 'admin',
       packCats: cats,
+      hasPacking: cats.length > 0, noPacking: cats.length === 0,
+      hasChecklist: s.checklist.length > 0, noChecklist: s.checklist.length === 0,
       packProgress: done + ' / ' + s.packing.length + ' items packed',
       packPct: s.packing.length ? Math.round((done / s.packing.length) * 100) + '%' : '0%',
       newPack: s.newPack || '', onNewPack: e => this.setState({ newPack: e.target.value }), addPack: this.addPack,
@@ -2598,29 +2641,34 @@ class Component extends DCLogic {
       exportPdf: () => this.toast('PDF queued · rendered server-side from the trip record'),
       exportXls: () => this.toast('Excel workbook queued · 9 sheets'),
 
+      /* Real counts off the local store. There is no backend behind this
+         screen yet, so it reports what exists rather than invented traffic. */
       adminStats: [
-        { label: 'Total users', value: '1,284', sub: '+37 this week' },
-        { label: 'Total trips', value: '4,916', sub: '+212 this week' },
-        { label: 'Trips created today', value: '58', sub: 'peak 09:00–11:00 IST' },
-        { label: 'AI generations', value: '6,402', sub: '1.3 per trip average' },
+        { label: 'Total users', value: String(s.user ? 1 : 0), sub: 'this device' },
+        { label: 'Total trips', value: String(s.trips.length), sub: 'across all modes' },
+        { label: 'Trips created today', value: String(s.trips.filter(t => t.created_today).length), sub: 'since midnight' },
+        { label: 'AI generations', value: String(s.trips.filter(t => t.generation_meta).length), sub: 'recorded on the trip row' },
       ],
-      adminDest: [
-        { name: 'Sikkim', pct: '78%', count: '612 trips' },
-        { name: 'Himachal Pradesh', pct: '71%', count: '554 trips' },
-        { name: 'Rajasthan', pct: '52%', count: '408 trips' },
-        { name: 'Kerala', pct: '44%', count: '346 trips' },
-        { name: 'Ladakh', pct: '38%', count: '297 trips' },
-      ],
-      adminModes: [
-        { name: 'Car', pct: '64%' }, { name: 'Bike', pct: '48%' }, { name: 'Train', pct: '31%' },
-        { name: 'Flight', pct: '22%' }, { name: 'Mixed', pct: '14%' }, { name: 'Bus', pct: '9%' },
-      ],
-      adminApi: [
-        { name: 'AI completions', calls: '6,402', cache: '—', errors: '11', tint: 'var(--amber)' },
-        { name: 'Routing / directions', calls: '18,240', cache: '62% cached', errors: '4', tint: 'var(--teal)' },
-        { name: 'Places search', calls: '31,905', cache: '74% cached', errors: '19', tint: 'var(--violet)' },
-        { name: 'Weather forecast', calls: '9,118', cache: '81% cached', errors: '2', tint: 'var(--coral)' },
-      ],
+      adminDest: (() => {
+        const byDest = {};
+        s.trips.forEach(t => { const k = t.destination.split(',').pop().trim(); byDest[k] = (byDest[k] || 0) + 1; });
+        const max = Math.max(1, ...Object.values(byDest));
+        return Object.keys(byDest).sort((a, b) => byDest[b] - byDest[a]).slice(0, 5).map(name => ({
+          name, count: byDest[name] + (byDest[name] === 1 ? ' trip' : ' trips'),
+          pct: Math.round((byDest[name] / max) * 100) + '%',
+        }));
+      })(),
+      adminModes: (() => {
+        const byMode = {};
+        s.trips.forEach(t => { byMode[t.travel_mode] = (byMode[t.travel_mode] || 0) + 1; });
+        const max = Math.max(1, ...Object.values(byMode));
+        return Object.keys(byMode).sort((a, b) => byMode[b] - byMode[a]).map(name => ({
+          name, pct: Math.round((byMode[name] / max) * 100) + '%',
+        }));
+      })(),
+      adminApi: [],
+      hasAdminData: s.trips.length > 0,
+      noAdminData: s.trips.length === 0,
     };
   }
 }
