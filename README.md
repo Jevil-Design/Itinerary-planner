@@ -66,6 +66,34 @@ Without it there is no session and every protected route answers 401.
 Email/password sign-in is **off** by default on a fresh Neon Auth project; only
 shared OAuth is enabled. Turn it on in the same Console screen if you want it.
 
+### Google sign-in
+
+Stack Auth serves the whole flow at `/handler/sign-in` — the Google button, the
+redirect to Google, the callback, and the session cookie. There is nothing to
+implement; it needs configuration.
+
+**Already done.** Google is enabled on the Neon Auth project, and
+`https://itinerary-planner-virid.vercel.app` is in the redirect whitelist.
+`localhost` is allowed by default, so `npm run dev` works without extra setup.
+
+**Still needed for it to run at all:** `STACK_SECRET_SERVER_KEY`, which the Neon
+API does not expose. Without it the server cannot validate a session and every
+protected route answers 401.
+
+**Still needed for production:** Google is currently a **shared** provider —
+Stack's own OAuth client. It works, but the consent screen says Stack rather
+than Contour and it is rate limited. To use your own:
+
+1. Google Cloud Console → APIs & Services → Credentials → Create OAuth client ID
+   → Web application.
+2. Authorised redirect URI:
+   `https://api.stack-auth.com/api/v1/auth/oauth/callback/google`
+3. Put the client ID and secret into Neon Console → Auth → Configuration →
+   Google, switching the provider from *shared* to *standard*.
+
+Add every new deployment origin to the trusted domain list, or its callback will
+be rejected.
+
 ### Two connections, on purpose
 
 `DATABASE_URL` authenticates as `neondb_owner`, which owns the tables and so
