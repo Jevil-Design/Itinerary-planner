@@ -1,12 +1,13 @@
 node_modules/
 .next/
 out/
-.env
-.env.local
-.env*.local
 *.tsbuildinfo
 next-env.d.ts
+
+# vercel link writes project ids and an OIDC token here
 .vercel
 
-.vercel
-.env*
+# Secrets. .env.example is the tracked template and must stay tracked.
+.env
+.env.local
+.env.*.local
