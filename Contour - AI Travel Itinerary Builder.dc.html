@@ -179,7 +179,7 @@
 
   <footer style="margin-top:44px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; font-family:var(--fm); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--tx3);">
     <span>Contour · AI trip engine</span>
-    <span>Design prototype · data layer wired to the Supabase schema</span>
+    <span>Design prototype · data layer wired to the Neon schema</span>
   </footer>
 </div>
 </sc-if>
@@ -196,7 +196,7 @@
       <h2 style="font-family:var(--fd); font-weight:400; font-size:42px; line-height:1.08; margin:0; letter-spacing:-.015em;">Your trips live in the cloud, not in this browser.</h2>
       <p style="font-size:14.5px; color:var(--tx2); margin:16px 0 0; max-width:40ch;">Plan on your laptop, ride with it on your phone. Sign in on any device and the same itinerary, budget and packing list is there.</p>
     </div>
-    <div style="font-family:var(--fm); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--tx3);">Supabase Auth · Row Level Security</div>
+    <div style="font-family:var(--fm); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--tx3);">Neon Auth · Row Level Security</div>
   </div>
   </sc-if>
   <div style="display:flex; align-items:center; justify-content:center; padding:40px 24px;">
@@ -205,7 +205,11 @@
 
       <sc-if value="{{ authReset }}" hint-placeholder-val="{{ false }}">
         <h1 style="font-family:var(--fd); font-weight:400; font-size:34px; margin:0; letter-spacing:-.01em;">Reset your password</h1>
-        <p style="font-size:14px; color:var(--tx2); margin:8px 0 26px;">We'll email you a secure reset link. The link expires in one hour.</p>
+        <p style="font-size:14px; color:var(--tx2); margin:8px 0 14px;">In the built app this emails you a secure reset link that expires in one hour.</p>
+        <div style="display:flex; align-items:flex-start; gap:9px; border:1px solid var(--line); background:var(--surf2); border-radius:4px; padding:11px 13px; margin-bottom:22px;">
+          <span style="font-family:var(--fm); font-size:12px; color:var(--amber);">✦</span>
+          <span style="font-size:12.5px; color:var(--tx2);">This is a design prototype with no mail server behind it, so no email will arrive. Password reset runs through Neon Auth once the app is deployed.</span>
+        </div>
         <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Email</label>
         <input type="email" value="{{ authEmail }}" onChange="{{ onAuthEmail }}" placeholder="you@example.com" style="width:100%; background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:13px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
         <button onClick="{{ sendReset }}" style="width:100%; margin-top:16px; background:var(--amber); border:none; color:var(--onAccent); border-radius:4px; padding:14px; font-size:14.5px; font-weight:700; cursor:pointer;" style-hover="opacity:.82;">Send reset link</button>
@@ -1471,7 +1475,7 @@
 
         <div style="border:1px solid var(--line2); background:var(--surf2); border-radius:4px; padding:18px;">
           <div style="font-family:var(--fm); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3);">About this build</div>
-          <div style="font-size:13.5px; color:var(--tx2); margin-top:9px; line-height:1.65;">This is the design prototype. Its data layer is shaped exactly like the production schema — the same tables, columns and relationships — and every mutation goes through a single service call, so swapping the in-memory store for the Supabase client is a one-file change. Nothing here is persisted to browser storage as a source of truth. The schema, RLS policies and API contract ship alongside this file.</div>
+          <div style="font-size:13.5px; color:var(--tx2); margin-top:9px; line-height:1.65;">This is the design prototype. Its data layer is shaped exactly like the production schema — the same tables, columns and relationships — and every mutation goes through a single service call, so swapping the in-memory store for the Neon client is a one-file change. Nothing here is persisted to browser storage as a source of truth. The schema, RLS policies and API contract ship alongside this file.</div>
         </div>
       </div>
       </sc-if>
@@ -1650,7 +1654,7 @@ class Component extends DCLogic {
     this._t = setTimeout(() => this.setState({ toast: null }), 2400);
   }
   /* Service layer — every mutation goes through here. In production each call is a
-     fetch to /api/... which writes to Supabase Postgres under RLS. */
+     fetch to /api/... which writes to Neon Postgres under RLS. */
   save(label, mutate) {
     this.setState({ sync: 'saving' });
     return new Promise(res => setTimeout(() => {
@@ -1731,7 +1735,15 @@ class Component extends DCLogic {
     this.setState({ authErr: '', view: 'app', section: 'dashboard', user: this.makeUser(authName, authEmail) });
     this.toast('Signed in with Google');
   };
-  sendReset = () => this.toast('Reset link sent to ' + this.state.authEmail);
+  /* No mail server behind the prototype, so this must not claim an email was
+     sent. The real flow is Stack Auth /handler/forgot-password. */
+  sendReset = () => {
+    if (!this.state.authEmail.includes('@')) {
+      return this.setState({ authErr: 'Enter the email on your account.' });
+    }
+    this.setState({ authErr: '' });
+    this.toast('Prototype — no email is sent');
+  };
 
   /* ---------- trips ---------- */
   onTripSearch = e => this.setState({ tripSearch: e.target.value });
@@ -1949,7 +1961,7 @@ class Component extends DCLogic {
       modeOptions: ['All modes', 'Bike', 'Car', 'Train', 'Flight', 'Bus', 'Mixed'],
       sortOptions: ['Newest first', 'Oldest first', 'Upcoming first', 'Longest trip'],
       visibleTrips, noTrips: visibleTrips.length === 0, clearFilters: this.clearFilters,
-      tripCountLabel: visibleTrips.length + ' of ' + s.trips.length + ' trips · from Supabase',
+      tripCountLabel: visibleTrips.length + ' of ' + s.trips.length + ' trips',
 
       toast: s.toast, hasToast: !!s.toast,
       ...this.planVals(active),
@@ -1997,7 +2009,7 @@ class Component extends DCLogic {
   prevStep = () => this.setState(s => ({ wizStep: Math.max(1, s.wizStep - 1) }));
   gotoStep = n => () => this.setState({ wizStep: n });
 
-  genSteps = ['Trip details validated', 'Route analyzed', 'Travel time calculated', 'Overnight locations selected', 'Finding attractions', 'Finding hotels', 'Finding restaurants', 'Checking weather', 'Optimizing daily schedule', 'Calculating budget', 'Creating packing list', 'Saving trip to Supabase'];
+  genSteps = ['Trip details validated', 'Route analyzed', 'Travel time calculated', 'Overnight locations selected', 'Finding attractions', 'Finding hotels', 'Finding restaurants', 'Checking weather', 'Optimizing daily schedule', 'Calculating budget', 'Creating packing list', 'Saving the trip'];
 
   /* Builds the part of a plan that follows deterministically from the wizard:
      the days and their dates, one route leg, a packing list keyed to how you
