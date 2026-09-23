@@ -108,10 +108,21 @@ theirs. Defence in depth, not the primary gate.
 ### Verifying it
 
 ```bash
-node scripts/verify-persistence.mjs   # 17 checks against the live database
-npm run typecheck
-npm run build
+node scripts/verify-persistence.mjs                        # 17 checks, live database
+node --experimental-strip-types scripts/verify-itinerary-e2e.mjs   # 16, real planner
+node scripts/verify-generate.mjs                           # 12, atomic write
+npm run test:browser                                       # 27, real Chromium
+npm run typecheck && npm run build
 ```
+
+`npm run build` runs `build:prototype` first, which regenerates
+`public/prototype/` from the design file. Do not hand-edit anything under
+`public/prototype/` — it is generated, and the build will overwrite it.
+
+The browser test drives a real Chromium through sign-up, the wizard, generation
+and every screen, then checks all nine viewport widths for horizontal overflow
+and watches the console. It catches what the unit suites cannot: an SVG
+attribute error, a script that fails to load, a nav that will not wrap.
 
 The persistence script writes two users and their trips, asserts neither can see
 or delete the other's, checks the CHECK constraints and the cascade, then rolls

@@ -8,12 +8,14 @@ export default async function Landing() {
 
   return (
     <main className="mx-auto max-w-5xl px-6 pb-24">
-      <header className="flex items-center justify-between gap-5 py-7">
+      {/* Wraps, because at 320px the brand and the two actions do not fit on
+          one line and the nav pushed 28px past the viewport. */}
+      <header className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 py-6">
         <div className="flex items-baseline gap-3">
           <span className="text-2xl">Contour</span>
           <span className="text-[10px] uppercase tracking-[0.18em] text-ink3">AI trip engine</span>
         </div>
-        <nav className="flex items-center gap-2">
+        <nav className="flex flex-wrap items-center gap-2">
           {user ? (
             <Link href="/trips" className="rounded border border-line2 px-4 py-2 text-sm font-semibold no-underline">
               My trips

@@ -881,8 +881,8 @@
         <div style="border:1px solid var(--line); background:var(--surf); border-radius:4px; overflow:hidden;">
           <div style="position:relative; height:440px; background:var(--surf2);">
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%;">
-              <polyline points="{{ mapPoly }}" fill="none" stroke="var(--amber)" stroke-width="0.5" stroke-linejoin="round" vector-effect="non-scaling-stroke" style="stroke-width:2.5px;"></polyline>
-              <polyline points="{{ mapPoly }}" fill="none" stroke="var(--teal)" stroke-width="0.4" stroke-dasharray="6 10" vector-effect="non-scaling-stroke" style="stroke-width:1.5px; animation:cDash 2.4s linear infinite;"></polyline>
+              <polyline sc-camel-points="{{ mapPoly }}" fill="none" stroke="var(--amber)" stroke-width="0.5" stroke-linejoin="round" vector-effect="non-scaling-stroke" style="stroke-width:2.5px;"></polyline>
+              <polyline sc-camel-points="{{ mapPoly }}" fill="none" stroke="var(--teal)" stroke-width="0.4" stroke-dasharray="6 10" vector-effect="non-scaling-stroke" style="stroke-width:1.5px; animation:cDash 2.4s linear infinite;"></polyline>
             </svg>
             <sc-for list="{{ mapPts }}" as="p" hint-placeholder-count="8">
               <div style="position:absolute; left:{{ p.left }}; top:{{ p.top }}; transform:{{ p.tf }}; display:flex; flex-direction:{{ p.dir }}; align-items:center; gap:7px; pointer-events:none;">
