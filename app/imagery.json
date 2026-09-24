@@ -1,0 +1,115 @@
+{
+  "fetched": "2026-09-24T05:54:27.736Z",
+  "images": [
+    {
+      "key": "darjeeling",
+      "label": "Darjeeling, West Bengal",
+      "title": "The sultan of tea.jpg",
+      "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/The_sultan_of_tea.jpg/1920px-The_sultan_of_tea.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "width": 1600,
+      "height": 1067,
+      "licence": "CC BY-SA 4.0",
+      "author": "Yoghya",
+      "page": "https://commons.wikimedia.org/wiki/File:The_sultan_of_tea.jpg"
+    },
+    {
+      "key": "sikkim",
+      "label": "Sikkim",
+      "title": "Panorama Kangchenjunga range from Sikkim.jpg",
+      "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Panorama_Kangchenjunga_range_from_Sikkim.jpg/1920px-Panorama_Kangchenjunga_range_from_Sikkim.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "width": 1600,
+      "height": 296,
+      "licence": "CC BY-SA 3.0",
+      "author": "Carsten.nebel",
+      "page": "https://commons.wikimedia.org/wiki/File:Panorama_Kangchenjunga_range_from_Sikkim.jpg"
+    },
+    {
+      "key": "goa",
+      "label": "Goa",
+      "title": "Palolem beach.jpg",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Palolem_beach.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "width": 1600,
+      "height": 1185,
+      "licence": "CC BY-SA 4.0",
+      "author": "Satyajit Nayak",
+      "page": "https://commons.wikimedia.org/wiki/File:Palolem_beach.jpg"
+    },
+    {
+      "key": "jaipur",
+      "label": "Jaipur, Rajasthan",
+      "title": "Hawa Mahal east facade (14-07-2022).jpg",
+      "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/Hawa_Mahal_east_facade_%2814-07-2022%29.jpg/1920px-Hawa_Mahal_east_facade_%2814-07-2022%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "width": 1600,
+      "height": 1200,
+      "licence": "CC BY-SA 4.0",
+      "author": "Chainwit.",
+      "page": "https://commons.wikimedia.org/wiki/File:Hawa_Mahal_east_facade_(14-07-2022).jpg"
+    },
+    {
+      "key": "kerala",
+      "label": "Kerala",
+      "title": "Kerala backwater scene.jpg",
+      "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/33/Kerala_backwater_scene.jpg/1920px-Kerala_backwater_scene.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "width": 1600,
+      "height": 1200,
+      "licence": "CC BY 2.0",
+      "author": "https://www.flickr.com/photos/thursdaynext/",
+      "page": "https://commons.wikimedia.org/wiki/File:Kerala_backwater_scene.jpg"
+    },
+    {
+      "key": "ladakh",
+      "label": "Ladakh",
+      "title": "Pangong Tso 2.jpg",
+      "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Pangong_Tso_2.jpg/1920px-Pangong_Tso_2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "width": 1600,
+      "height": 774,
+      "licence": "CC BY-SA 4.0",
+      "author": "KennyOMG",
+      "page": "https://commons.wikimedia.org/wiki/File:Pangong_Tso_2.jpg"
+    },
+    {
+      "key": "hampi",
+      "label": "Hampi, Karnataka",
+      "title": "Hampi - Hemakuta Hill - Sri Guddada Moola Virupaksha Temple.jpg",
+      "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cf/Hampi_-_Hemakuta_Hill_-_Sri_Guddada_Moola_Virupaksha_Temple.jpg/1920px-Hampi_-_Hemakuta_Hill_-_Sri_Guddada_Moola_Virupaksha_Temple.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "width": 1600,
+      "height": 618,
+      "licence": "CC BY-SA 4.0",
+      "author": "Ingo Mehling",
+      "page": "https://commons.wikimedia.org/wiki/File:Hampi_-_Hemakuta_Hill_-_Sri_Guddada_Moola_Virupaksha_Temple.jpg"
+    },
+    {
+      "key": "munnar",
+      "label": "Munnar, Kerala",
+      "title": "Munnar tea gardens.jpg",
+      "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/Munnar_tea_gardens.jpg/1920px-Munnar_tea_gardens.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "width": 1600,
+      "height": 202,
+      "licence": "Public domain",
+      "author": "Unknown",
+      "page": "https://commons.wikimedia.org/wiki/File:Munnar_tea_gardens.jpg"
+    },
+    {
+      "key": "varanasi",
+      "label": "Varanasi, Uttar Pradesh",
+      "title": "Varanasi Munshi Ghat3.jpg",
+      "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Varanasi_Munshi_Ghat3.jpg/1920px-Varanasi_Munshi_Ghat3.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "width": 1600,
+      "height": 1116,
+      "licence": "CC BY-SA 3.0",
+      "author": "Marcin Białek",
+      "page": "https://commons.wikimedia.org/wiki/File:Varanasi_Munshi_Ghat3.jpg"
+    },
+    {
+      "key": "andaman",
+      "label": "Andaman Islands",
+      "title": "View of Radhanagar Beach, Havelock, Andaman, India.jpg",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/a/a7/View_of_Radhanagar_Beach%2C_Havelock%2C_Andaman%2C_India.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "width": 1600,
+      "height": 1200,
+      "licence": "CC BY-SA 4.0",
+      "author": "Avijitchatterjee",
+      "page": "https://commons.wikimedia.org/wiki/File:View_of_Radhanagar_Beach,_Havelock,_Andaman,_India.jpg"
+    }
+  ]
+}

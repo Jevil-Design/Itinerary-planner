@@ -11,8 +11,20 @@ body {
   text-wrap: pretty;
 }
 
-/* Visible focus for keyboard users, on every interactive element. */
-:where(a, button, input, select, textarea):focus-visible {
-  outline: 2px solid theme('colors.ink');
-  outline-offset: 2px;
+/* Visible focus for keyboard users on every interactive element. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid theme('colors.terracotta');
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Headlines set tight and heavy, the way the reference does. */
+.display {
+  font-weight: 800;
+  letter-spacing: theme('letterSpacing.tightest');
+  line-height: 1.02;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
