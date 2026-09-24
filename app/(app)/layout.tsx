@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { stackServerApp } from '@/stack';
+import { tryGetUser } from '@/stack';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
  * page means a new screen cannot be added without the guard.
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const user = await stackServerApp.getUser();
+  const user = await tryGetUser();
   if (!user) redirect('/handler/sign-in');
 
   const name = user.displayName ?? user.primaryEmail ?? 'You';

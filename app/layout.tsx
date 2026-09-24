@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { StackProvider, StackTheme } from '@stackframe/stack';
-import { stackServerApp } from '@/stack';
+import { authConfigured, stackServerApp } from '@/stack';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -21,9 +21,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="font-sans text-[15px] leading-relaxed">
-        <StackProvider app={stackServerApp}>
-          <StackTheme>{children}</StackTheme>
-        </StackProvider>
+        {/* Without the server key there is no Stack app to provide, and mounting
+            the provider would throw. The rest of the site does not need it. */}
+        {authConfigured() ? (
+          <StackProvider app={stackServerApp()}>
+            <StackTheme>{children}</StackTheme>
+          </StackProvider>
+        ) : (
+          children
+        )}
       </body>
     </html>
   );

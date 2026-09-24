@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { stackServerApp } from '@/stack';
+import { tryGetUser } from '@/stack';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Landing() {
-  const user = await stackServerApp.getUser();
+  const user = await tryGetUser();
 
   return (
     <main className="mx-auto max-w-5xl px-6 pb-24">
