@@ -94,6 +94,25 @@ than Contour and it is rate limited. To use your own:
 Add every new deployment origin to the trusted domain list, or its callback will
 be rejected.
 
+### Deploying
+
+`vercel.json` pins `framework: nextjs`. Do not remove it. The project was
+created as a static site, so its preset was `null`; Vercel still ran
+`next build` and reported success, then served the output as a plain directory.
+Static files resolved and every server route 404d — `/prototype` worked while
+`/` did not, which looks like a routing bug and is not one.
+
+Vercel also blocks deployment of Next.js versions carrying a critical advisory,
+*after* a successful build. The log ends `Build Completed` followed by
+`Vulnerable version of Next.js detected` and the deployment goes red. Keep Next
+current; `npm audit` before wondering why a green build will not go live.
+
+Auth is optional at build time. `stack.ts` constructs `StackServerApp` lazily,
+so a deployment without `STACK_SECRET_SERVER_KEY` still builds and serves —
+the landing page, the prototype and the API all work, and `/handler/*` renders
+an honest "sign-in is not set up yet" page instead of crashing. Add the key to
+turn accounts on.
+
 ### Two connections, on purpose
 
 `DATABASE_URL` authenticates as `neondb_owner`, which owns the tables and so
