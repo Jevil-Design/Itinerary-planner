@@ -111,16 +111,25 @@ await step('planner is gated', async () => {
   if (!/\/login/.test(page.url())) throw new Error('reached /plan without a session: ' + page.url());
 });
 
-await step('code request reports missing email config honestly', async () => {
+await step('code request answers honestly, whatever the email config', async () => {
   await page.goto(base + '/login', { waitUntil: 'networkidle' });
   await page.locator('input[type="email"]').fill('tester@example.com');
   await page.getByRole('button', { name: /send code/i }).click();
-  await page.waitForTimeout(1200);
+  await page.waitForTimeout(2500);
   const t = await text();
-  // with no RESEND_API_KEY the honest answer is that delivery is unconfigured
-  if (!/not configured|could not be sent/i.test(t)) {
-    throw new Error('no clear message about email delivery: ' + t.slice(0, 120));
+  // Three outcomes are all honest, and which one you get depends on the
+  // deployment rather than on the code: no provider configured, the provider
+  // refusing this recipient (the shared resend.dev sender only delivers to the
+  // account owner), or the code genuinely going out. What must never happen is
+  // claiming a code was sent when none was, or spilling a raw error.
+  const unconfigured = /not configured|could not be sent/i.test(t);
+  const refused = /could not send|not right|try again/i.test(t);
+  const sent = /We sent a six-digit code/i.test(t);
+  if (!unconfigured && !refused && !sent) {
+    throw new Error('no clear outcome from the code request: ' + t.slice(0, 160));
   }
+  if (/at Object\.|node_modules|\bstack\b/i.test(t)) throw new Error('raw error leaked to the page');
+  if (/\b\d{6}\b/.test(t) && sent) throw new Error('a six-digit code is visible on the page');
 });
 
 await step('prototype planner still reachable', async () => {
