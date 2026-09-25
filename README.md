@@ -140,6 +140,7 @@ needs no sign-in and stays reachable at `/prototype`.
 ```bash
 npm run test:otp        # 21 checks: forgery, tampering, brute force, expiry
 npm run test:oauth      # 33 checks: PKCE, state, open redirect, ID-token claims
+npm run test:session    # 6 steps: a real session opens the planner, not a 2nd login
 npm run test:browser    # 27 steps through the planner in real Chromium
 node scripts/browser-test-site.mjs http://127.0.0.1:3400   # the site itself
 npm run typecheck && npm run build

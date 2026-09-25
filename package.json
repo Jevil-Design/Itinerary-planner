@@ -16,7 +16,8 @@
     "test:oauth": "node --experimental-strip-types scripts/verify-oauth.mjs",
     "setup:google": "node scripts/setup-google.mjs",
     "setup:email": "node scripts/setup-email.mjs",
-    "setup:domain": "node scripts/setup-domain.mjs"
+    "setup:domain": "node scripts/setup-domain.mjs",
+    "test:session": "node --experimental-strip-types scripts/browser-test-planner-session.mjs"
   },
   "dependencies": {
     "next": "^15.5.26",

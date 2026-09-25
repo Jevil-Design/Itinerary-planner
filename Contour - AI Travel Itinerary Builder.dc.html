@@ -100,8 +100,8 @@
           <div style="font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-top:3px;">Planning modules</div>
         </div>
         <div>
-          <div style="font-family:var(--fm); font-size:22px; font-weight:500; color:var(--teal);">Cloud</div>
-          <div style="font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-top:3px;">Synced across devices</div>
+          <div style="font-family:var(--fm); font-size:22px; font-weight:500; color:var(--teal);">Private</div>
+          <div style="font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-top:3px;">Nothing is stored</div>
         </div>
       </div>
     </div>
@@ -111,7 +111,7 @@
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); background:var(--surf2);">
           <span style="font-family:var(--fm); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--tx3);">Generated itinerary</span>
           <span style="display:inline-flex; align-items:center; gap:6px; font-family:var(--fm); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal);">
-            <span style="width:5px; height:5px; border-radius:50%; background:var(--teal);"></span>Saved to cloud
+            <span style="width:5px; height:5px; border-radius:50%; background:var(--teal);"></span>Kept in this tab
           </span>
         </div>
         <div style="padding:20px 18px;">
@@ -193,10 +193,10 @@
       <span style="font-family:var(--fm); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--tx3);">AI trip engine</span>
     </div>
     <div>
-      <h2 style="font-family:var(--fd); font-weight:400; font-size:42px; line-height:1.08; margin:0; letter-spacing:-.015em;">Your trips live in the cloud, not in this browser.</h2>
-      <p style="font-size:14.5px; color:var(--tx2); margin:16px 0 0; max-width:40ch;">Plan on your laptop, ride with it on your phone. Sign in on any device and the same itinerary, budget and packing list is there.</p>
+      <h2 style="font-family:var(--fd); font-weight:400; font-size:42px; line-height:1.08; margin:0; letter-spacing:-.015em;">Your trip stays in this browser, and nowhere else.</h2>
+      <p style="font-size:14.5px; color:var(--tx2); margin:16px 0 0; max-width:40ch;">Everything you plan lives in this tab and is gone when you close it. Nothing is written to a server, and no account is kept for you.</p>
     </div>
-    <div style="font-family:var(--fm); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--tx3);">Neon Auth · Row Level Security</div>
+    <div style="font-family:var(--fm); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--tx3);">No database · nothing stored</div>
   </div>
   </sc-if>
   <div style="display:flex; align-items:center; justify-content:center; padding:40px 24px;">
@@ -208,7 +208,7 @@
         <p style="font-size:14px; color:var(--tx2); margin:8px 0 14px;">In the built app this emails you a secure reset link that expires in one hour.</p>
         <div style="display:flex; align-items:flex-start; gap:9px; border:1px solid var(--line); background:var(--surf2); border-radius:4px; padding:11px 13px; margin-bottom:22px;">
           <span style="font-family:var(--fm); font-size:12px; color:var(--amber);">✦</span>
-          <span style="font-size:12.5px; color:var(--tx2);">This is a design prototype with no mail server behind it, so no email will arrive. Password reset runs through Neon Auth once the app is deployed.</span>
+          <span style="font-size:12.5px; color:var(--tx2);">This is the design prototype, and nothing here signs you in for real. The live app has no passwords at all — you sign in with Google or a six-digit code, so there is nothing to reset.</span>
         </div>
         <label style="display:block; font-family:var(--fm); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--tx3); margin-bottom:7px;">Email</label>
         <input type="email" value="{{ authEmail }}" onChange="{{ onAuthEmail }}" placeholder="you@example.com" style="width:100%; background:var(--surf); border:1px solid var(--line); border-radius:4px; padding:13px 14px; color:var(--tx); outline:none;" style-focus="border-color:var(--amber);" />
@@ -1596,11 +1596,19 @@
 <script type="text/x-dc" data-dc-script data-props="{&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;comfortable&quot;,&quot;options&quot;:[&quot;compact&quot;,&quot;comfortable&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;currency&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;₹&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data&quot;},&quot;strictVerification&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Data&quot;}}">
 class Component extends DCLogic {
   state = {
-    view: 'landing', section: 'dashboard',
+    /* Served at /plan the server has already established who this is, and
+       passes it in window.__CONTOUR_SESSION__. The prototype's own landing and
+       sign-in screens are then wrong to show: they would be a second, fake
+       login sitting on top of a real session. */
+    view: (typeof window !== 'undefined' && window.__CONTOUR_SESSION__) ? 'app' : 'landing', section: 'dashboard',
     theme: 'light',
     wide: typeof window !== 'undefined' ? window.innerWidth >= 900 : true,
     authMode: 'login', authEmail: '', authPass: '', authName: '', authErr: '',
-    user: null,
+    user: (typeof window !== 'undefined' && window.__CONTOUR_SESSION__)
+      ? { id: 'u0', full_name: (window.__CONTOUR_SESSION__.email || '').split('@')[0] || 'You',
+          email: window.__CONTOUR_SESSION__.email, phone: '—', default_currency: 'INR',
+          preferred_mode: 'Not set', preferred_budget: 'Not set', food_preference: 'Not set' }
+      : null,
     trips: [], days: [], acts: [], hotels: [], restos: [], sights: [], expenses: [], packing: [], checklist: [], places: [], routes: [], weather: [],
     activeTripId: null,
     sync: 'idle', toast: null,
@@ -1705,7 +1713,15 @@ class Component extends DCLogic {
   goItinerary = () => this.setState({ section: 'itinerary' });
   goMap = () => this.setState({ section: 'map' });
   closeMore = () => this.setState({ moreOpen: false });
-  logout = () => this.setState({ view: 'landing', section: 'dashboard', moreOpen: false });
+  logout = () => {
+    /* A real session has to be ended on the server. POST, not a link, so it
+       cannot be triggered by an <img> tag on another site. */
+    if (typeof window !== 'undefined' && window.__CONTOUR_SESSION__) {
+      fetch('/api/auth/signout', { method: 'POST' }).finally(() => { window.location.href = '/'; });
+      return;
+    }
+    this.setState({ view: 'landing', section: 'dashboard', moreOpen: false });
+  };
 
   onAuthEmail = e => this.setState({ authEmail: e.target.value });
   onAuthPass = e => this.setState({ authPass: e.target.value });
@@ -1716,7 +1732,7 @@ class Component extends DCLogic {
     if (authPass.length < 8) return this.setState({ authErr: 'Password must be at least 8 characters.' });
     if (authMode === 'signup' && authName.trim().length < 2) return this.setState({ authErr: 'Enter your full name.' });
     this.setState({ authErr: '', view: 'app', section: 'dashboard', user: this.makeUser(authName, authEmail) });
-    this.toast(authMode === 'signup' ? 'Account created · profile row inserted' : 'Signed in · session restored from cloud');
+    this.toast(authMode === 'signup' ? 'Signed in · no account kept' : 'Signed in · nothing stored');
   };
   /* There is no real OAuth here, so the button opens a stand-in for Google's
      account chooser rather than signing you straight in. It used to inherit
@@ -1942,7 +1958,7 @@ class Component extends DCLogic {
       navGroups, tabItems, allSections,
       sectionTitle: sectionTitles[s.section] || '',
       crumb: active ? active.source + ' → ' + active.destination : 'No trip selected',
-      syncLabel: s.sync === 'saving' ? 'Saving to cloud' : s.sync === 'saved' ? 'Synced' : 'Connecting',
+      syncLabel: s.sync === 'saving' ? 'Updating' : s.sync === 'saved' ? 'In this tab' : 'Ready',
       syncColor: s.sync === 'saving' ? 'var(--amber)' : s.sync === 'saved' ? 'var(--teal)' : 'var(--tx3)',
       userName: s.user ? s.user.full_name : '—',
       userEmail: s.user ? s.user.email : '',
