@@ -1,15 +1,16 @@
 import Link from 'next/link';
+import NextImage from 'next/image';
 import { currentSession } from '@/lib/session';
 import imagery from './imagery.json';
 
 export const dynamic = 'force-dynamic';
 
-type Image = {
+type Photo = {
   key: string; label: string; title: string; src: string;
   width: number; height: number; licence: string; author: string; page: string;
 };
 
-const images = imagery.images as Image[];
+const images = imagery.images as Photo[];
 const pick = (key: string) => images.find((i) => i.key === key) ?? images[0];
 
 const STEPS = [
@@ -48,12 +49,13 @@ export default async function Landing() {
 
       {/* ---------------- hero ---------------- */}
       <section className="relative isolate overflow-hidden bg-navy text-white">
-        <img
+        <NextImage
           src={hero.src}
           alt={hero.label}
-          width={hero.width}
-          height={hero.height}
-          className="absolute inset-0 -z-10 h-full w-full object-cover opacity-40"
+          fill
+          priority
+          sizes="100vw"
+          className="-z-10 object-cover opacity-40"
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-navy/80 via-navy/70 to-navy" />
 
@@ -142,10 +144,12 @@ export default async function Landing() {
           {images.slice(0, 6).map((img) => (
             <li key={img.key} className="group overflow-hidden rounded-card border border-line bg-bg shadow-card">
               <div className="aspect-[4/3] overflow-hidden bg-sand">
-                <img
+                <NextImage
                   src={img.src}
                   alt={img.label}
-                  loading="lazy"
+                  width={img.width}
+                  height={img.height}
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                   className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                 />
               </div>
