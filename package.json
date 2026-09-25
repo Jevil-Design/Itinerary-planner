@@ -15,7 +15,8 @@
     "fetch:imagery": "node scripts/fetch-imagery.mjs",
     "test:oauth": "node --experimental-strip-types scripts/verify-oauth.mjs",
     "setup:google": "node scripts/setup-google.mjs",
-    "setup:email": "node scripts/setup-email.mjs"
+    "setup:email": "node scripts/setup-email.mjs",
+    "setup:domain": "node scripts/setup-domain.mjs"
   },
   "dependencies": {
     "next": "^15.5.26",
