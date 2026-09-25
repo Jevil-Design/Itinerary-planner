@@ -61,6 +61,26 @@ a code it never kept.
 `lib/otp-core.ts` is pure and takes the secret as a parameter, which is what
 makes it testable. `lib/otp.ts` is the thin server-only wrapper that supplies it.
 
+### Delivering the code
+
+The emailed code needs a provider. Resend is the default because it needs one
+key and no DNS to start:
+
+```sh
+npm run setup:email -- <resend-api-key> <your-email>
+```
+
+That sends a real test message through Resend *before* it touches the
+deployment, so a rejected key or an unaccepted sender fails at the point of
+setup rather than in front of a user. Then it sets both variables and redeploys.
+
+The default sender is `onboarding@resend.dev`, which needs no domain setup but
+**only delivers to the address that owns the Resend account**. To email anyone
+else, verify a domain in Resend and pass that address as a third argument.
+
+Without the pair, `/api/auth/otp/request` refuses with a message saying so,
+rather than pretending a code was sent.
+
 ### Google
 
 Authorization Code flow with PKCE (S256). The `state` and the PKCE verifier ride
