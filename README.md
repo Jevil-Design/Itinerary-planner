@@ -5,7 +5,7 @@ schedule, what to pack and what it costs.
 
 **Nothing a user enters is stored on a server.** There is no database. A trip
 lives in the browser for as long as the tab is open and is gone when it closes.
-Sign-in is a one-time code and creates no account.
+Sign-in is a one-time code or Google, and creates no account either way.
 
 ---
 
@@ -42,7 +42,11 @@ an oversight. Export before closing the tab.
 
 ## Sign-in
 
-A six-digit code by email. No password, no OAuth, no profile.
+Two ways in, and neither one creates an account: a six-digit code by email, or
+Continue with Google. Both end at the same place — a signed cookie holding an
+email address and an expiry, and nothing else.
+
+### One-time code
 
 The usual design keeps issued codes in a table. This one stores nothing, so the
 challenge is carried in a signed cookie — the address, a **hash** of the code,
@@ -56,6 +60,43 @@ a code it never kept.
 
 `lib/otp-core.ts` is pure and takes the secret as a parameter, which is what
 makes it testable. `lib/otp.ts` is the thin server-only wrapper that supplies it.
+
+### Google
+
+Authorization Code flow with PKCE (S256). The `state` and the PKCE verifier ride
+in a short-lived signed cookie built by the same `sealValue`/`openValue` helpers
+as the OTP challenge — so, again, no server-side session store. The returned ID
+token is checked for issuer, audience, expiry and `email_verified` before a
+session is issued. The client secret is only ever used server to server, in
+`app/api/auth/google/callback`.
+
+To set it up: Google Cloud Console → APIs & Services → Credentials → Create
+credentials → OAuth client ID → Web application. The authorised redirect URI
+must match exactly, including the scheme and the trailing path:
+
+```
+https://itinerary-planner-virid.vercel.app/api/auth/google/callback
+http://localhost:3000/api/auth/google/callback
+```
+
+Then give the deployment the pair and redeploy — **Vercel injects environment
+variables at deploy time, so a variable added after a deployment does not reach
+it**:
+
+```sh
+vercel env add GOOGLE_CLIENT_ID production
+vercel env add GOOGLE_CLIENT_SECRET production
+vercel --prod
+```
+
+The redirect URI is derived from the incoming request, not from a build-time
+constant, so previews and custom domains work without further configuration.
+`NEXT_PUBLIC_*` would not: those are inlined into the bundle when it is built,
+which would pin every production callback to the build machine's host. Set
+`APP_ORIGIN` only if a proxy misreports the host.
+
+Until both variables are present the button is still rendered, but it redirects
+to `/login?error=google_unconfigured` and says so — it is never a dead control.
 
 ---
 
@@ -78,6 +119,7 @@ needs no sign-in and stays reachable at `/prototype`.
 
 ```bash
 npm run test:otp        # 21 checks: forgery, tampering, brute force, expiry
+npm run test:oauth      # 33 checks: PKCE, state, open redirect, ID-token claims
 npm run test:browser    # 27 steps through the planner in real Chromium
 node scripts/browser-test-site.mjs http://127.0.0.1:3400   # the site itself
 npm run typecheck && npm run build
