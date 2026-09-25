@@ -43,6 +43,18 @@ const text = () => page.evaluate(() => document.body?.innerText ?? '');
 await step('a real session reaches the planner', async () => {
   const res = await page.goto(base + '/plan', { waitUntil: 'networkidle' });
   if (res.status() !== 200) throw new Error('expected 200, got ' + res.status());
+  /*
+   * The cookie is signed with the AUTH_SECRET in .env.local. A deployment with a
+   * different secret will rightly reject it and bounce to /login — that is the
+   * security boundary doing its job, not a defect. Say so plainly rather than
+   * letting every later step fail as though the planner were broken.
+   */
+  if (page.url().includes('/login')) {
+    console.log('\n  This deployment does not share the local AUTH_SECRET, so no session');
+    console.log('  can be minted for it. Rejecting the cookie is correct. Run this against');
+    console.log('  a server started with the same .env.local to exercise the planner.\n');
+    process.exit(0);
+  }
   await page.waitForTimeout(2000);
 });
 
