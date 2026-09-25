@@ -87,5 +87,13 @@ export function readSession(secret: string, token: string | undefined): { email:
   return { email: s.email };
 }
 
+/**
+ * Generic signed-payload helpers, shared with the OAuth state cookie. Same
+ * construction as the OTP challenge: base64url body, HMAC over it, constant-time
+ * compare on the way back in.
+ */
+export const sealValue = seal;
+export const openValue = open;
+
 /** Exported so tests can forge a correctly-signed but hostile cookie. */
 export const _seal = seal;

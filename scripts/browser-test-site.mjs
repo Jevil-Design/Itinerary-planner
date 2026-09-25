@@ -69,6 +69,43 @@ await step('sign-in page renders', async () => {
   if (!(await page.locator('input[type="email"]').count())) throw new Error('no email field');
 });
 
+await step('Google button is server-rendered', async () => {
+  const res = await fetch(base + '/login');
+  const html = await res.text();
+  // must be in the HTML, not injected after hydration
+  if (!/Continue with Google/.test(html)) throw new Error('Google button missing from server HTML');
+  if (!/Send code/.test(html)) throw new Error('email form missing from server HTML');
+});
+
+await step('Google start behaves correctly either way', async () => {
+  const res = await fetch(base + '/api/auth/google/start', { redirect: 'manual' });
+  const loc = res.headers.get('location') ?? '';
+  if (res.status !== 303) throw new Error('expected 303, got ' + res.status);
+  // Configured or not, both outcomes are valid; what must never happen is a
+  // dead button — a 500, or a redirect to neither Google nor an explained error.
+  const toGoogle = /accounts\.google\.com/.test(loc);
+  const toError = /error=google_unconfigured/.test(loc);
+  if (!toGoogle && !toError) throw new Error('unexpected redirect: ' + loc);
+});
+
+await step('the unconfigured message reaches the page', async () => {
+  await page.goto(base + '/login?error=google_unconfigured', { waitUntil: 'networkidle' });
+  const t = await text();
+  if (!/not set up on this deployment/i.test(t)) throw new Error('message not shown: ' + t.slice(0, 120));
+});
+
+await step('OAuth redirect_uri matches the host being served', async () => {
+  const res = await fetch(base + '/api/auth/google/start', { redirect: 'manual' });
+  const loc = res.headers.get('location') ?? '';
+  if (!/accounts.google.com/.test(loc)) return; // unconfigured here, covered above
+  const redirect = new URL(loc).searchParams.get('redirect_uri') ?? '';
+  // NEXT_PUBLIC_* is inlined at build time; if that ever creeps back in, this
+  // catches it by comparing against the host actually answering the request.
+  if (!redirect.startsWith(base)) {
+    throw new Error('redirect_uri ' + redirect + ' does not match ' + base);
+  }
+});
+
 await step('planner is gated', async () => {
   await page.goto(base + '/plan', { waitUntil: 'domcontentloaded' });
   if (!/\/login/.test(page.url())) throw new Error('reached /plan without a session: ' + page.url());
