@@ -13,7 +13,8 @@
     "test:browser": "node scripts/browser-test.mjs",
     "test:otp": "node --experimental-strip-types scripts/verify-otp.mjs",
     "fetch:imagery": "node scripts/fetch-imagery.mjs",
-    "test:oauth": "node --experimental-strip-types scripts/verify-oauth.mjs"
+    "test:oauth": "node --experimental-strip-types scripts/verify-oauth.mjs",
+    "setup:google": "node scripts/setup-google.mjs"
   },
   "dependencies": {
     "next": "^15.5.26",
