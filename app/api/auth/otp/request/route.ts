@@ -23,7 +23,8 @@ export async function POST(req: Request) {
   if (!emailConfigured()) {
     return fail(
       'GENERATION_FAILED',
-      'Email delivery is not configured, so a code cannot be sent. Set RESEND_API_KEY and EMAIL_FROM.',
+      'Email delivery is not configured, so a code cannot be sent. Set either SMTP_HOST, ' +
+        'SMTP_USER and SMTP_PASS, or RESEND_API_KEY — plus EMAIL_FROM.',
     );
   }
 
