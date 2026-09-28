@@ -19,7 +19,8 @@
     "setup:domain": "node scripts/setup-domain.mjs",
     "test:session": "node --experimental-strip-types scripts/browser-test-planner-session.mjs",
     "test:email": "node --experimental-strip-types scripts/verify-email.mjs",
-    "setup:smtp": "node scripts/setup-smtp.mjs"
+    "setup:smtp": "node scripts/setup-smtp.mjs",
+    "test:plan": "node --experimental-strip-types scripts/verify-plan.mjs"
   },
   "dependencies": {
     "next": "^15.5.26",
