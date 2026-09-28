@@ -63,23 +63,35 @@ makes it testable. `lib/otp.ts` is the thin server-only wrapper that supplies it
 
 ### Delivering the code
 
-The emailed code needs a provider. Resend is the default because it needs one
-key and no DNS to start:
+Two providers. Which one you want depends on who has to receive a code.
+
+**SMTP — anyone can sign in.** An ordinary mailbox, no DNS, no domain:
+
+```sh
+npm run setup:smtp -- <your-gmail> <16-char-app-password> [someone-else@example.com]
+```
+
+Gmail needs 2-Step Verification on, then an app password from
+`myaccount.google.com/apppasswords` — never the account password. Pass a third
+argument to prove delivery reaches someone other than you. The ceiling is
+roughly 500 messages a day.
+
+**Resend — one key, but restricted until you own a domain.**
 
 ```sh
 npm run setup:email -- <resend-api-key> <your-email>
 ```
 
-That sends a real test message through Resend *before* it touches the
-deployment, so a rejected key or an unaccepted sender fails at the point of
-setup rather than in front of a user. Then it sets both variables and redeploys.
+The default `onboarding@resend.dev` sender **only delivers to the address that
+owns the Resend account**, which makes it useless for letting other people in.
+`npm run setup:domain` lifts that by verifying a subdomain, but it needs DNS
+records added wherever the domain is managed.
 
-The default sender is `onboarding@resend.dev`, which needs no domain setup but
-**only delivers to the address that owns the Resend account**. To email anyone
-else, verify a domain in Resend and pass that address as a third argument.
+Both scripts send a real message before touching the deployment, so a bad
+credential fails at setup rather than in front of a user. SMTP wins when both
+are configured. With neither, the request route says so rather than pretending
+a code was sent.
 
-Without the pair, `/api/auth/otp/request` refuses with a message saying so,
-rather than pretending a code was sent.
 
 ### Google
 
@@ -140,6 +152,7 @@ needs no sign-in and stays reachable at `/prototype`.
 ```bash
 npm run test:otp        # 21 checks: forgery, tampering, brute force, expiry
 npm run test:oauth      # 33 checks: PKCE, state, open redirect, ID-token claims
+npm run test:email      # 14 checks: provider choice, a real SMTP send, no leaks
 npm run test:session    # 6 steps: a real session opens the planner, not a 2nd login
 npm run test:browser    # 27 steps through the planner in real Chromium
 node scripts/browser-test-site.mjs http://127.0.0.1:3400   # the site itself
