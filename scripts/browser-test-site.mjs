@@ -69,40 +69,39 @@ await step('sign-in page renders', async () => {
   if (!(await page.locator('input[type="email"]').count())) throw new Error('no email field');
 });
 
-await step('Google button is server-rendered', async () => {
+await step('the email form is server-rendered', async () => {
   const res = await fetch(base + '/login');
   const html = await res.text();
   // must be in the HTML, not injected after hydration
-  if (!/Continue with Google/.test(html)) throw new Error('Google button missing from server HTML');
   if (!/Send code/.test(html)) throw new Error('email form missing from server HTML');
+  if (!/type="email"/.test(html)) throw new Error('email field missing from server HTML');
 });
 
-await step('Google start behaves correctly either way', async () => {
-  const res = await fetch(base + '/api/auth/google/start', { redirect: 'manual' });
-  const loc = res.headers.get('location') ?? '';
-  if (res.status !== 303) throw new Error('expected 303, got ' + res.status);
-  // Configured or not, both outcomes are valid; what must never happen is a
-  // dead button — a 500, or a redirect to neither Google nor an explained error.
-  const toGoogle = /accounts\.google\.com/.test(loc);
-  const toError = /error=google_unconfigured/.test(loc);
-  if (!toGoogle && !toError) throw new Error('unexpected redirect: ' + loc);
+await step('no other sign-in method is offered', async () => {
+  const html = await (await fetch(base + '/login')).text();
+  /*
+   * The product offers exactly one way in. A stray button for a route that no
+   * longer exists would be a dead control, which is worse than none.
+   *
+   * Matched against markup, not prose: the page says "No password" as a
+   * statement of fact, and a bare /password/ would flag that as a password
+   * form. What must not exist is an actual field or an OAuth link.
+   */
+  for (const gone of [
+    /Continue with Google/i,
+    /accounts\.google\.com/i,
+    /type="password"/i,
+    /\/api\/auth\/google/i,
+  ]) {
+    if (gone.test(html)) throw new Error('an extra sign-in method is on the page: ' + gone);
+  }
 });
 
-await step('the unconfigured message reaches the page', async () => {
-  await page.goto(base + '/login?error=google_unconfigured', { waitUntil: 'networkidle' });
-  const t = await text();
-  if (!/not set up on this deployment/i.test(t)) throw new Error('message not shown: ' + t.slice(0, 120));
-});
-
-await step('OAuth redirect_uri matches the host being served', async () => {
-  const res = await fetch(base + '/api/auth/google/start', { redirect: 'manual' });
-  const loc = res.headers.get('location') ?? '';
-  if (!/accounts.google.com/.test(loc)) return; // unconfigured here, covered above
-  const redirect = new URL(loc).searchParams.get('redirect_uri') ?? '';
-  // NEXT_PUBLIC_* is inlined at build time; if that ever creeps back in, this
-  // catches it by comparing against the host actually answering the request.
-  if (!redirect.startsWith(base)) {
-    throw new Error('redirect_uri ' + redirect + ' does not match ' + base);
+await step('the removed Google routes are really gone', async () => {
+  for (const path of ['/api/auth/google/start', '/api/auth/google/callback']) {
+    const res = await fetch(base + path, { redirect: 'manual' });
+    // 404 is the point. A 303 would mean the route still exists.
+    if (res.status !== 404) throw new Error(path + ' answered ' + res.status + ', expected 404');
   }
 });
 

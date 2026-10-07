@@ -88,7 +88,7 @@ export function readSession(secret: string, token: string | undefined): { email:
 }
 
 /**
- * Generic signed-payload helpers, shared with the OAuth state cookie. Same
+ * Generic signed-payload helpers. Same
  * construction as the OTP challenge: base64url body, HMAC over it, constant-time
  * compare on the way back in.
  */

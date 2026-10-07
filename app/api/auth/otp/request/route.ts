@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       return fail(
         'EMAIL_RECIPIENT_BLOCKED',
         'This deployment can only email the address that owns its mail account, ' +
-          'so a code cannot be sent here. Use Continue with Google instead.',
+          'so a code cannot be sent to this address yet.',
       );
     }
     return fail('GENERATION_FAILED', 'The code could not be sent. Try again in a moment.');

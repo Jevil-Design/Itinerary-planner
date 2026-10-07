@@ -4,8 +4,8 @@
  * wrong to show — a user who has just signed in gets asked to sign in again,
  * by a form that accepts anything and creates a fake user.
  *
- * This signs in for real (by minting the same session cookie the OTP and Google
- * routes issue) and asserts the planner opens straight into the planner.
+ * This signs in for real (by minting the same session cookie the OTP
+ * route issues) and asserts the planner opens straight into the planner.
  *
  *   node scripts/browser-test-planner-session.mjs http://127.0.0.1:3400
  */
