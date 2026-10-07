@@ -11,21 +11,15 @@
     "build:prototype": "node scripts/build-prototype.mjs",
     "prebuild": "node scripts/build-prototype.mjs",
     "test:browser": "node scripts/browser-test.mjs",
-    "test:otp": "node --experimental-strip-types scripts/verify-otp.mjs",
     "fetch:imagery": "node scripts/fetch-imagery.mjs",
-    "setup:email": "node scripts/setup-email.mjs",
-    "setup:domain": "node scripts/setup-domain.mjs",
-    "test:session": "node --experimental-strip-types scripts/browser-test-planner-session.mjs",
-    "test:email": "node --experimental-strip-types scripts/verify-email.mjs",
-    "setup:smtp": "node scripts/setup-smtp.mjs",
     "test:plan": "node --experimental-strip-types scripts/verify-plan.mjs",
-    "test:persistence": "node scripts/verify-persistence.mjs"
+    "test:persistence": "node scripts/verify-persistence.mjs",
+    "test:auth": "node --experimental-strip-types scripts/verify-auth.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "next": "^15.5.26",
-    "nodemailer": "^10.0.11",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "server-only": "^0.0.1",
@@ -33,7 +27,6 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.6",
-    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
     "autoprefixer": "^10.4.20",

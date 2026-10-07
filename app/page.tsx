@@ -31,7 +31,7 @@ const FAQ = [
   },
   {
     q: 'Is my trip saved?',
-    a: 'No. Nothing you enter is stored on a server. Your trip lives in this browser for as long as the tab is open, and it is gone when you leave. Export it before you close.',
+    a: 'Signing in stores your email address, so we can recognise you next time. The trip itself is not yet stored on a server — it lives in this browser for as long as the tab is open and is gone when you leave, so export it before you close. Saved trips are being added.',
   },
   {
     q: 'Why sign in at all, then?',
@@ -247,7 +247,7 @@ function Footer() {
         </div>
 
         <p className="mt-8 max-w-[70ch] text-[13px] leading-relaxed text-ink2">
-          Nothing you enter is stored on a server. Your trip lives in this browser only, and is gone
+          Signing in stores your email address and nothing else. The trip itself is not yet stored on a server — it lives in this browser only, and is gone
           when you close the tab.
         </p>
 

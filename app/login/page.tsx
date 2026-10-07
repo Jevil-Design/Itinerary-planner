@@ -1,13 +1,18 @@
 import LoginForm from './login-form';
 
 /**
- * Sign-in is a six-digit code by email, and nothing else.
+ * A server component so the form is in the server HTML rather than appearing
+ * after hydration, and so an error carried back from /auth/callback is rendered
+ * on the first paint.
  *
- * This was a server component so it could read the OAuth error from the query
- * string. With Google removed there is nothing to read, but it stays a server
- * component: the form must be in the server HTML rather than appearing after
- * hydration, which is what broke the last time this page was restructured.
+ * A signed-in visitor never reaches here: middleware redirects them to the
+ * dashboard before this runs.
  */
-export default function LoginPage() {
-  return <LoginForm />;
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+  return <LoginForm initialError={error ?? ''} />;
 }

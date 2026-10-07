@@ -1,16 +1,14 @@
 import 'server-only';
-import { cookies } from 'next/headers';
-import { readSession, SESSION_COOKIE } from '@/lib/otp';
+import { currentUser } from '@/lib/supabase/server';
 
 /**
- * The whole of session state: an email, carried in a signed cookie. There is no
- * user table to look it up in, by design.
+ * Who is signed in, for routes that only need an address.
+ *
+ * Backed by Supabase Auth now rather than a self-signed cookie. The token is
+ * verified against the auth server on every call — a decoded cookie is not
+ * evidence of anything, because the browser owns it.
  */
 export async function currentSession(): Promise<{ email: string } | null> {
-  try {
-    return readSession((await cookies()).get(SESSION_COOKIE)?.value);
-  } catch {
-    // readSession throws only when AUTH_SECRET is unset; treat that as signed out
-    return null;
-  }
+  const user = await currentUser();
+  return user?.email ? { email: user.email } : null;
 }

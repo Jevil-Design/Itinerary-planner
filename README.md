@@ -3,9 +3,10 @@
 Give it a source, a destination and dates. It builds the route, the day-by-day
 schedule, what to pack and what it costs.
 
-**Nothing a user enters is stored on a server.** There is no database. A trip
-lives in the browser for as long as the tab is open and is gone when it closes.
-Sign-in is a six-digit code by email, and creates no account.
+**Supabase is the backend of record.** Accounts, trips, itineraries and budgets
+live there behind Row Level Security, so the database rather than the app decides
+who can read them. The planner UI does not write to it yet — that migration is in
+progress, and until it lands a trip still lives only in the browser tab.
 
 ---
 
@@ -41,56 +42,20 @@ an oversight. Export before closing the tab.
 
 ## Sign-in
 
-Sign-in is a six-digit code by email, and nothing else. It creates no
-account: the session is a signed cookie holding an email address and an
-expiry, and nothing more.
+A six-digit code by email, issued and verified by Supabase Auth. No password,
+and no other method.
 
-### One-time code
+This replaced a self-rolled sender that could only reach one address — see
+[docs/authentication.md](docs/authentication.md) for what went wrong, how the
+flow works now, and the two dashboard settings production needs.
 
-The usual design keeps issued codes in a table. This one stores nothing, so the
-challenge is carried in a signed cookie — the address, a **hash** of the code,
-an expiry and an attempt counter, HMAC'd with `AUTH_SECRET`. The server verifies
-a code it never kept.
-
-- The plaintext code exists only in the email and the user's head
-- Attempts are counted inside the cookie, so brute force is bounded without storage
-- `AUTH_SECRET` *is* the security boundary — rotating it invalidates every session
-- Revocation is per-browser, because the challenge lives in that browser's cookie
-
-`lib/otp-core.ts` is pure and takes the secret as a parameter, which is what
-makes it testable. `lib/otp.ts` is the thin server-only wrapper that supplies it.
-
-### Delivering the code
-
-Two providers. Which one you want depends on who has to receive a code.
-
-**SMTP — anyone can sign in.** An ordinary mailbox, no DNS, no domain:
+- `middleware.ts` refreshes the access token and guards `/dashboard`, `/trips` and `/plan`
+- `/auth/callback` handles an emailed link, in either shape Supabase can send
+- Sessions are read with `getUser()`, never `getSession()` — the latter only decodes a cookie the browser owns
 
 ```sh
-npm run setup:smtp -- <your-gmail> <16-char-app-password> [someone-else@example.com]
+npm run test:auth    # error mapping, and that a code reaches an address we do not own
 ```
-
-Gmail needs 2-Step Verification on, then an app password from
-`myaccount.google.com/apppasswords` — never the account password. Pass a third
-argument to prove delivery reaches someone other than you. The ceiling is
-roughly 500 messages a day.
-
-**Resend — one key, but restricted until you own a domain.**
-
-```sh
-npm run setup:email -- <resend-api-key> <your-email>
-```
-
-The default `onboarding@resend.dev` sender **only delivers to the address that
-owns the Resend account**, which makes it useless for letting other people in.
-`npm run setup:domain` lifts that by verifying a subdomain, but it needs DNS
-records added wherever the domain is managed.
-
-Both scripts send a real message before touching the deployment, so a bad
-credential fails at setup rather than in front of a user. SMTP wins when both
-are configured. With neither, the request route says so rather than pretending
-a code was sent.
-
 
 ## Running it
 

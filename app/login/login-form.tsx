@@ -2,93 +2,136 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { browserClient, authMessage } from '@/lib/supabase/client';
+
+/**
+ * Sign-in: an emailed code, and nothing else.
+ *
+ * This goes through Supabase Auth rather than the previous custom sender. That
+ * is the fix for codes only ever reaching one address — the old path used a
+ * shared sandbox sender that refuses any recipient but the account owner, while
+ * Supabase sends to anyone.
+ *
+ * The code field also accepts a link: if the project's email template sends a
+ * magic link instead of a six-digit token, that link lands on /auth/callback
+ * and signs the user in there. Which of the two arrives is a dashboard setting,
+ * so both are supported.
+ */
 
 type Stage = 'email' | 'code';
 
-export default function LoginForm() {
+const RESEND_SECONDS = 45;
+
+export default function LoginForm({ initialError = '' }: { initialError?: string }) {
   const router = useRouter();
   const [stage, setStage] = useState<Stage>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(initialError);
+  const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const codeRef = useRef<HTMLInputElement>(null);
 
-  async function post(url: string, body: object) {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    return { ok: res.ok, data: await res.json().catch(() => ({})) };
-  }
+  // Countdown for the resend link, so the button is not simply dead.
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
-  async function requestCode(e: React.FormEvent) {
-    e.preventDefault();
+  useEffect(() => {
+    if (stage === 'code') codeRef.current?.focus();
+  }, [stage]);
+
+  async function sendCode(e?: React.FormEvent) {
+    e?.preventDefault();
     setError('');
+    setNotice('');
+    const address = email.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(address)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
     setBusy(true);
     try {
-      const { ok, data } = await post('/api/auth/otp/request', { email });
-      if (!ok) return setError(data?.error?.message ?? 'Could not send the code.');
+      const supabase = browserClient();
+      const { error: err } = await supabase.auth.signInWithOtp({
+        email: address,
+        options: {
+          shouldCreateUser: true,
+          // Only used if the template sends a link rather than a code.
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (err) {
+        // The real error is kept for the console; the user gets the mapped one.
+        console.error('[login] signInWithOtp', err.status, err.code, err.message);
+        setError(authMessage(err));
+        return;
+      }
       setStage('code');
-    } catch {
-      setError('Could not reach the server. Check your connection.');
+      setCooldown(RESEND_SECONDS);
+      setNotice(`We sent a code to ${address}. It may take a moment, and it can land in spam.`);
+    } catch (err) {
+      console.error('[login] signInWithOtp threw', err);
+      setError("We couldn't reach the sign-in service. Check your connection and try again.");
     } finally {
       setBusy(false);
     }
   }
 
-  async function verifyCode(e: React.FormEvent) {
+  async function verify(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    const token = code.replace(/\D/g, '');
+    if (token.length !== 6) {
+      setError('Enter the six digits from the email.');
+      return;
+    }
+
     setBusy(true);
     try {
-      const { ok, data } = await post('/api/auth/otp/verify', { code });
-      if (!ok) return setError(data?.error?.message ?? 'That code is not right.');
-      router.push('/plan');
+      const supabase = browserClient();
+      const { error: err } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token,
+        type: 'email',
+      });
+      if (err) {
+        console.error('[login] verifyOtp', err.status, err.code, err.message);
+        setError(authMessage(err));
+        return;
+      }
+      // refresh() so the server re-reads the new session cookie before we move.
       router.refresh();
-    } catch {
-      setError('Could not reach the server. Check your connection.');
+      router.push('/dashboard');
+    } catch (err) {
+      console.error('[login] verifyOtp threw', err);
+      setError("We couldn't reach the sign-in service. Check your connection and try again.");
     } finally {
       setBusy(false);
     }
   }
-
-  const field =
-    'w-full rounded border border-line bg-white px-4 py-3.5 text-[15px] outline-none focus:border-terracotta';
 
   return (
-    <main className="grid min-h-screen lg:grid-cols-2">
-      {/* left: the promise, kept honest */}
-      <aside className="hidden flex-col justify-between bg-navy p-12 text-white lg:flex">
-        <Link href="/" className="flex items-baseline gap-2.5 no-underline">
-          <span className="text-[22px] font-extrabold tracking-tight text-white">Contour</span>
-          <span className="text-[10px] uppercase tracking-[0.18em] text-gold">AI trip engine</span>
-        </Link>
-        <div>
-          <h2 className="display max-w-[16ch] text-[40px]">A code, and nothing else.</h2>
-          <p className="mt-5 max-w-[42ch] text-[15px] leading-relaxed text-white/70">
-            No password to set. No profile. Nothing you enter is stored on a server — your trip
-            lives in this browser only, and leaves when you do.
-          </p>
-        </div>
-        <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">One-time code · no account kept</p>
-      </aside>
-
-      {/* right: the form */}
-      <div className="flex items-center justify-center px-6 py-16">
+    <main className="min-h-screen bg-bg">
+      <div className="mx-auto flex max-w-content items-center justify-center px-5 py-16">
         <div className="w-full max-w-[400px]">
-          <Link href="/" className="text-[11px] uppercase tracking-[0.14em] text-ink3 no-underline hover:text-ink lg:hidden">
-            ← Contour
+          <Link href="/" className="text-[20px] font-extrabold tracking-tight text-ink no-underline">
+            Contour
           </Link>
 
           {stage === 'email' ? (
-            <form onSubmit={requestCode} noValidate className="mt-6">
+            <form onSubmit={sendCode} noValidate className="mt-6">
               <h1 className="display m-0 text-[34px]">Sign in</h1>
               <p className="mb-6 mt-2 text-[14.5px] text-ink2">
-                Enter your email and we&rsquo;ll send you a six-digit code. No password,
-                and signing in creates no account.
+                Enter your email and we&rsquo;ll send you a six-digit code. No password.
               </p>
+
+              {error && <Alert>{error}</Alert>}
 
               <label className="mb-1.5 block text-[10px] uppercase tracking-[0.14em] text-ink3" htmlFor="email">
                 Email
@@ -98,72 +141,89 @@ export default function LoginForm() {
                 type="email"
                 inputMode="email"
                 autoComplete="email"
+                autoFocus
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className={field}
+                className="w-full rounded border border-line2 bg-white px-3.5 py-3.5 text-[15px] text-ink outline-none focus:border-ink"
               />
-
-              {error && <Alert>{error}</Alert>}
 
               <button
                 type="submit"
-                disabled={busy || !email}
-                className="mt-5 w-full rounded bg-terracotta py-4 text-[15px] font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                disabled={busy}
+                className="mt-5 w-full rounded bg-terracotta py-3.5 text-[15px] font-bold text-white transition disabled:opacity-60"
               >
                 {busy ? 'Sending…' : 'Send code'}
               </button>
             </form>
           ) : (
-            <form onSubmit={verifyCode} noValidate className="mt-6">
+            <form onSubmit={verify} noValidate className="mt-6">
               <h1 className="display m-0 text-[34px]">Check your email</h1>
-              <p className="mb-7 mt-2 text-[14.5px] text-ink2">
-                We sent a six-digit code to <strong className="text-ink">{email}</strong>.
+              <p className="mb-6 mt-2 text-[14.5px] text-ink2">
+                We sent a verification code to <strong className="text-ink">{email}</strong>.
               </p>
 
-              <label className="mb-1.5 block text-[10px] uppercase tracking-[0.14em] text-ink3" htmlFor="code">
+              {error && <Alert>{error}</Alert>}
+              {notice && !error && (
+                <p className="mt-4 rounded border border-line2 bg-sand/40 px-3.5 py-3 text-[13.5px] text-ink2">
+                  {notice}
+                </p>
+              )}
+
+              <label className="mb-1.5 mt-4 block text-[10px] uppercase tracking-[0.14em] text-ink3" htmlFor="code">
                 Six-digit code
               </label>
               <input
                 id="code"
+                ref={codeRef}
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 maxLength={6}
-                required
                 value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                placeholder="000000"
-                className={`${field} text-center text-[24px] tracking-[0.4em]`}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="______"
+                className="w-full rounded border border-line2 bg-white px-3.5 py-3.5 text-center text-[22px] tracking-[0.5em] text-ink outline-none focus:border-ink"
               />
-
-              {error && <Alert>{error}</Alert>}
 
               <button
                 type="submit"
-                disabled={busy || code.length !== 6}
-                className="mt-5 w-full rounded bg-terracotta py-4 text-[15px] font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                disabled={busy}
+                className="mt-5 w-full rounded bg-terracotta py-3.5 text-[15px] font-bold text-white transition disabled:opacity-60"
               >
-                {busy ? 'Checking…' : 'Sign in'}
+                {busy ? 'Verifying…' : 'Verify'}
               </button>
 
-              <button
-                type="button"
-                onClick={() => { setStage('email'); setCode(''); setError(''); }}
-                className="mt-3 w-full rounded border border-line py-3.5 text-[14px] text-ink2 transition hover:border-line2 hover:text-ink"
-              >
-                Use a different email
-              </button>
+              <div className="mt-5 flex items-center justify-between text-[13px]">
+                <button
+                  type="button"
+                  disabled={cooldown > 0 || busy}
+                  onClick={() => sendCode()}
+                  className="bg-transparent p-0 font-semibold text-terracotta disabled:text-ink3"
+                >
+                  {cooldown > 0 ? `Resend available in ${cooldown}s` : 'Resend code'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setStage('email'); setCode(''); setError(''); setNotice(''); }}
+                  className="bg-transparent p-0 font-semibold text-ink3"
+                >
+                  Change email
+                </button>
+              </div>
+
+              <p className="mt-6 text-[12.5px] leading-relaxed text-ink3">
+                If the email contains a link rather than a code, opening the link signs you
+                in too.
+              </p>
             </form>
           )}
-
         </div>
       </div>
     </main>
   );
 }
 
-/** Google's own mark, so the button is recognisable rather than a coloured G. */
 function Alert({ children }: { children: React.ReactNode }) {
   return (
     <p role="alert" className="mt-4 rounded border border-danger bg-danger/5 px-3.5 py-3 text-[13.5px] text-danger">
