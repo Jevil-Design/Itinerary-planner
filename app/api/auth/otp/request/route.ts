@@ -32,6 +32,15 @@ export async function POST(req: Request) {
   const sent = await sendCode(parsed.data.email, code);
   if (!sent.ok) {
     console.error('[otp/request] send failed', sent.reason, sent.detail);
+    if (sent.reason === 'recipient_not_allowed') {
+      // Saying "try again" here would be a lie: this deployment's email sender
+      // is restricted and no amount of retrying will reach this address.
+      return fail(
+        'EMAIL_RECIPIENT_BLOCKED',
+        'This deployment can only email the address that owns its mail account, ' +
+          'so a code cannot be sent here. Use Continue with Google instead.',
+      );
+    }
     return fail('GENERATION_FAILED', 'The code could not be sent. Try again in a moment.');
   }
 

@@ -106,6 +106,22 @@ const bad = await m.sendCode('a@b.com', CODE);
 ok('a broken smtp host fails cleanly', bad.ok === false && bad.reason === 'send_failed');
 ok('the error does not contain the code', !String(bad.detail).includes(CODE), String(bad.detail).slice(0, 48));
 
+/* ---------- a blocked recipient must not be reported as retryable ---------- */
+clear();
+process.env.RESEND_API_KEY = 're_x'; process.env.EMAIL_FROM = 'a@b.com';
+m = await load();
+{
+  // Stand in for Resend answering 403 for an address that is not the account owner.
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(
+    JSON.stringify({ message: 'You can only send testing emails to your own email address (owner@x.com). To send emails to other recipients, please verify a domain at resend.com/domains', statusCode: 403 }),
+    { status: 403 });
+  const blocked = await m.sendCode('stranger@example.com', '483920');
+  globalThis.fetch = realFetch;
+  ok('a blocked recipient is its own failure kind', blocked.reason === 'recipient_not_allowed', blocked.reason);
+  ok('it is NOT reported as a generic retryable failure', blocked.reason !== 'send_failed');
+  ok('the blocked-recipient error does not leak the code', !String(blocked.detail).includes('483920'));
+}
 server.close();
 console.log('-'.repeat(52));
 console.log(`${pass}/${pass + fail} passed${fail ? ', ' + fail + ' FAILED' : ', all green'}`);

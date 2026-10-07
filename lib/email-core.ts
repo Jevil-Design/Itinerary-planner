@@ -17,7 +17,17 @@
 
 export type SendResult =
   | { ok: true; via: 'smtp' | 'resend' }
-  | { ok: false; reason: 'not_configured' | 'send_failed'; detail?: string };
+  | {
+      ok: false;
+      /*
+       * `recipient_not_allowed` is separated from `send_failed` because the two
+       * need opposite advice. A send failure may well succeed on retry; a
+       * provider refusing the recipient never will, and telling someone to try
+       * again is worse than telling them nothing.
+       */
+      reason: 'not_configured' | 'send_failed' | 'recipient_not_allowed';
+      detail?: string;
+    };
 
 const env = (name: string) => process.env[name]?.trim() || '';
 
@@ -105,7 +115,18 @@ async function sendViaResend(to: string, code: string): Promise<SendResult> {
 
   if (!res.ok) {
     const detail = await res.text().catch(() => '');
-    return { ok: false, reason: 'send_failed', detail: detail.slice(0, 200) };
+    /*
+     * The shared onboarding@resend.dev sender delivers only to the address that
+     * owns the Resend account; Resend answers 403 and says so. Retrying cannot
+     * help, so this is reported as its own kind of failure.
+     */
+    const restricted =
+      res.status === 403 && /only send testing emails|verify a domain/i.test(detail);
+    return {
+      ok: false,
+      reason: restricted ? 'recipient_not_allowed' : 'send_failed',
+      detail: detail.slice(0, 300),
+    };
   }
   return { ok: true, via: 'resend' };
 }
