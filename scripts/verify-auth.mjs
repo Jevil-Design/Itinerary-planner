@@ -33,8 +33,12 @@ console.log('\nSUPABASE AUTH');
 console.log('='.repeat(62));
 
 /* ---------- error mapping: no generic "something went wrong" ---------- */
-ok('a rate limit reads as a rate limit',
-  /wait/i.test(authMessage({ message: 'For security purposes, you can only request this after 51 seconds', status: 429 })));
+ok('a short throttle quotes the actual wait',
+  /51 seconds/.test(authMessage({ message: 'For security purposes, you can only request this after 51 seconds', status: 429 })));
+ok('the hourly cap is not described as a short wait',
+  /hourly/i.test(authMessage({ message: 'email rate limit exceeded', code: 'over_email_send_rate_limit', status: 429 })));
+ok('the hourly cap does not tell people to retry in a minute',
+  !/minute/i.test(authMessage({ message: 'email rate limit exceeded', code: 'over_email_send_rate_limit', status: 429 })));
 ok('an expired code says to request a new one',
   /expired/i.test(authMessage({ message: 'Token has expired', code: 'otp_expired' })));
 ok('a bad address says so',
@@ -47,27 +51,35 @@ ok('an unknown error keeps Supabase wording rather than inventing one',
   authMessage({ message: 'some novel failure' }) === 'some novel failure');
 
 /* ---------- the actual blocker ---------- */
-const stamp = Date.now();
-const stranger = `contour-auth-${stamp}@primarc.in`;
+/*
+ * Sending a real code costs one of the project's hourly allowance, and the
+ * built-in mailer only permits a couple. Running this suite used to spend one
+ * every time, which is its own small denial of service against the people
+ * trying to sign in. It is opt-in now:
+ *
+ *   node scripts/verify-auth.mjs --live
+ */
+const stranger = `contour-auth-${Date.now()}@primarc.in`;
 
-const c = fresh();
-const { error } = await c.auth.signInWithOtp({
-  email: stranger,
-  options: { shouldCreateUser: true },
-});
-
-if (error && /rate limit|after \d+ seconds/i.test(error.message)) {
-  // Supabase's built-in mailer is heavily rate limited. Hitting that is not a
-  // failure of the thing under test — it proves the request was accepted and
-  // queued rather than refused for the recipient.
-  console.log(`  ok    a non-owner address is accepted  [rate limited, which means accepted]`);
-  pass++;
+if (process.argv.includes('--live')) {
+  const { error } = await fresh().auth.signInWithOtp({
+    email: stranger,
+    options: { shouldCreateUser: true },
+  });
+  if (error && /rate limit|after \d+ seconds/i.test(error.message)) {
+    // Being rate limited proves the request was accepted and queued, which is
+    // the thing under test — the old sender refused the recipient outright.
+    ok('a non-owner address is accepted', true, 'rate limited, which means accepted');
+  } else {
+    ok('A CODE CAN BE SENT TO AN ADDRESS WE DO NOT OWN', !error,
+      error ? `${error.status} ${error.message}` : stranger);
+  }
 } else {
-  ok('A CODE CAN BE SENT TO AN ADDRESS WE DO NOT OWN', !error,
-    error ? `${error.status} ${error.message}` : stranger);
+  console.log('  skip  live send (pass --live to spend one of the hourly allowance)');
 }
 
 /* ---------- a wrong code must be refused ---------- */
+/* Verification does not send anything, so this costs nothing. */
 const { error: badErr } = await fresh().auth.verifyOtp({
   email: stranger, token: '000000', type: 'email',
 });

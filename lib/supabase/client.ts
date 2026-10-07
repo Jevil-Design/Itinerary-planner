@@ -33,8 +33,25 @@ export function authMessage(error: { message?: string; status?: number; code?: s
   const m = (error.message ?? '').toLowerCase();
   const code = error.code ?? '';
 
-  if (code === 'over_email_send_rate_limit' || /rate limit|too many requests/.test(m) || error.status === 429) {
-    return 'Too many codes requested. Wait a minute or two, then try again.';
+  /*
+   * Two different limits wear the same 429, and they need opposite advice.
+   *
+   * "after N seconds" is the short throttle between consecutive requests —
+   * genuinely a matter of waiting. `over_email_send_rate_limit` is the mailer's
+   * hourly cap, which on the built-in service is only a couple of messages;
+   * telling someone to wait a minute there is simply wrong, and they will keep
+   * trying and keep failing.
+   */
+  const seconds = m.match(/after (\d+) seconds?/);
+  if (seconds) {
+    return `Please wait ${seconds[1]} seconds before requesting another code.`;
+  }
+  if (code === 'over_email_send_rate_limit' || /email rate limit exceeded/.test(m)) {
+    return 'This deployment has reached its hourly limit for sign-in emails. ' +
+      'Try again later, or ask the administrator to configure a mail provider.';
+  }
+  if (/rate limit|too many requests/.test(m) || error.status === 429) {
+    return 'Too many attempts. Wait a moment, then try again.';
   }
   if (/invalid.*email|email.*invalid|unable to validate email/.test(m)) {
     return 'That does not look like a valid email address.';
