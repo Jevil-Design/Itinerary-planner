@@ -20,9 +20,12 @@
     "test:session": "node --experimental-strip-types scripts/browser-test-planner-session.mjs",
     "test:email": "node --experimental-strip-types scripts/verify-email.mjs",
     "setup:smtp": "node scripts/setup-smtp.mjs",
-    "test:plan": "node --experimental-strip-types scripts/verify-plan.mjs"
+    "test:plan": "node --experimental-strip-types scripts/verify-plan.mjs",
+    "test:persistence": "node scripts/verify-persistence.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.2",
     "next": "^15.5.26",
     "nodemailer": "^10.0.11",
     "react": "19.0.0",

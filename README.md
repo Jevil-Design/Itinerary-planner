@@ -20,7 +20,6 @@ Sign-in is a one-time code or Google, and creates no account either way.
 | `support.js` | The runtime the design file needs, beside it so it opens straight from disk. |
 | `scripts/` | Build and verification: prototype build, imagery fetch, OTP tests, browser tests. |
 | `app/imagery.json` | Destination photography: source URL, subject, licence and author for each image. |
-| `database/` | The Postgres schema from the previous, database-backed design. Kept for reference; nothing reads it. |
 
 ---
 
