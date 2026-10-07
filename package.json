@@ -14,7 +14,8 @@
     "fetch:imagery": "node scripts/fetch-imagery.mjs",
     "test:plan": "node --experimental-strip-types scripts/verify-plan.mjs",
     "test:persistence": "node scripts/verify-persistence.mjs",
-    "test:auth": "node --experimental-strip-types scripts/verify-auth.mjs"
+    "test:auth": "node --experimental-strip-types scripts/verify-auth.mjs",
+    "test:site": "node scripts/browser-test-site.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
