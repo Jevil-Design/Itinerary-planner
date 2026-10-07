@@ -131,13 +131,17 @@ await step('code request answers honestly, whatever the email config', async () 
   if (/\b\d{6}\b/.test(t) && sent) throw new Error('a six-digit code is visible on the page');
 });
 
-await step('prototype planner still reachable', async () => {
-  await page.goto(base + '/prototype', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(1500);
-  const t = await text();
-  if (!/Contour/.test(t)) throw new Error('prototype did not render');
-  if (/\{\{/.test(t)) throw new Error('raw template visible');
+await step('the planner is not reachable without signing in', async () => {
+  // It used to be served from public/, which was a way straight past the gate.
+  for (const path of ['/prototype', '/prototype/', '/prototype/index.html']) {
+    const res = await fetch(base + path, { redirect: 'manual' });
+    if (res.status === 200) throw new Error(path + ' is publicly readable');
+  }
+  // The template runtime stays public; it is a library, not the planner.
+  const rt = await fetch(base + '/prototype/support.js');
+  if (!rt.ok) throw new Error('support.js should still be served, got ' + rt.status);
 });
+
 
 await step('security headers present', async () => {
   const res = await page.goto(base + '/', { waitUntil: 'domcontentloaded' });

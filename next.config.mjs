@@ -10,11 +10,6 @@ const nextConfig = {
     ],
   },
   poweredByHeader: false,
-  // public/prototype/index.html is reachable at its full path, but Next does
-  // not resolve a directory index, so bare /prototype would 404.
-  async rewrites() {
-    return [{ source: '/prototype', destination: '/prototype/index.html' }];
-  },
   async headers() {
     return [{
       source: '/:path*',

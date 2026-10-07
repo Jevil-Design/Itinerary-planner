@@ -15,8 +15,8 @@ Sign-in is a six-digit code by email, and creates no account.
 |---|---|
 | `app/` | The site: landing page, one-time-code sign-in, and the gated planner route. |
 | `lib/` | OTP crypto, the server wrapper that holds the signing secret, email delivery, the error envelope. |
-| `public/prototype/` | The planner itself — a self-contained client application, generated from the design file. |
-| `Contour - AI Travel Itinerary Builder.dc.html` | The design file. The source of truth for the planner; `public/prototype/` is built from it. |
+| `prototype-build/` | The planner itself, generated from the design file. Deliberately outside `public/` — a statically served copy would be a way past the sign-in gate. Served only by `app/plan`, after the session check. |
+| `Contour - AI Travel Itinerary Builder.dc.html` | The design file. The source of truth for the planner; `prototype-build/` is built from it. |
 | `support.js` | The runtime the design file needs, beside it so it opens straight from disk. |
 | `scripts/` | Build and verification: prototype build, imagery fetch, OTP tests, browser tests. |
 | `app/imagery.json` | Destination photography: source URL, subject, licence and author for each image. |
@@ -103,7 +103,7 @@ npm run dev
 
 Without `RESEND_API_KEY` and `EMAIL_FROM`, the code-request endpoint refuses
 with a clear message rather than pretending a code was sent. The planner itself
-needs no sign-in and stays reachable at `/prototype`.
+needs a signed-in session and is served only at `/plan`.
 
 ---
 

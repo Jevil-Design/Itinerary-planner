@@ -76,12 +76,12 @@ export default async function Landing() {
             >
               Start planning
             </Link>
-            <a
-              href="/prototype/"
+            <Link
+              href="/login"
               className="rounded border border-white/25 px-7 py-4 text-[15px] font-semibold text-white no-underline transition hover:bg-white/10"
             >
-              See it working
-            </a>
+              Sign in
+            </Link>
           </div>
 
           <p className="mt-10 text-[11px] uppercase tracking-[0.16em] text-white/45">Popular starts</p>
@@ -241,9 +241,9 @@ function Footer() {
       <div className="mx-auto max-w-content px-5 py-12">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <span className="text-[20px] font-extrabold tracking-tight">Contour</span>
-          <a href="/prototype/" className="text-[14px] font-semibold text-terracotta no-underline hover:underline">
+          <Link href="/plan" className="text-[14px] font-semibold text-terracotta no-underline hover:underline">
             Open the planner →
-          </a>
+          </Link>
         </div>
 
         <p className="mt-8 max-w-[70ch] text-[13px] leading-relaxed text-ink2">

@@ -14,6 +14,7 @@ import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../public', import.meta.url));
+const BUILD = fileURLToPath(new URL('../prototype-build', import.meta.url));
 const SHOTS = fileURLToPath(new URL('../.browser-shots', import.meta.url));
 const args = process.argv.slice(2);
 const wantShots = args.includes('--shots');
@@ -21,14 +22,29 @@ const externalUrl = args.includes('--url') ? args[args.indexOf('--url') + 1] : n
 
 const TYPES = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json' };
 
-/** Minimal static server so the page runs on a real origin, not file://. */
+/**
+ * Minimal static server so the page runs on a real origin, not file://.
+ *
+ * The planner itself no longer lives under public/ — a statically served copy
+ * was a way straight past the sign-in gate, so it moved to prototype-build/ and
+ * only app/plan serves it, after checking the session. This test is about the
+ * planner's own behaviour rather than the gate, so it stitches the two
+ * directories back together: the page from its private home, support.js from
+ * public, exactly as the browser sees them at /plan.
+ */
 function serve() {
   return new Promise((resolve) => {
     const server = createServer(async (req, res) => {
       let p = decodeURIComponent(req.url.split('?')[0]);
       if (p.endsWith('/')) p += 'index.html';
-      const file = normalize(join(ROOT, p));
-      if (!file.startsWith(ROOT) || !existsSync(file)) { res.writeHead(404); return res.end('not found'); }
+
+      const file =
+        p === '/prototype/index.html'
+          ? join(BUILD, 'index.html')
+          : normalize(join(ROOT, p));
+
+      const allowed = file === join(BUILD, 'index.html') || file.startsWith(ROOT);
+      if (!allowed || !existsSync(file)) { res.writeHead(404); return res.end('not found'); }
       res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream' });
       res.end(await readFile(file));
     });

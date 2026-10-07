@@ -19,8 +19,19 @@ import { fileURLToPath } from 'node:url';
 const root = new URL('../', import.meta.url);
 const SRC = fileURLToPath(new URL('Contour - AI Travel Itinerary Builder.dc.html', root));
 const RUNTIME = fileURLToPath(new URL('support.js', root));
-const OUT_DIR = fileURLToPath(new URL('public/prototype/', root));
+/*
+ * The page itself is written OUTSIDE public/ on purpose. Anything under public/
+ * is served to anyone who knows the URL, and the planner is behind sign-in — a
+ * reachable copy at /prototype would be a way straight past it.
+ *
+ * app/plan reads this file from disk and serves it only to a signed-in session.
+ *
+ * support.js does stay public: it is the template runtime, carries nothing
+ * private, and the generated page loads it by absolute URL from the browser.
+ */
+const OUT_DIR = fileURLToPath(new URL('prototype-build/', root));
 const OUT = OUT_DIR + 'index.html';
+const PUBLIC_RUNTIME_DIR = fileURLToPath(new URL('public/prototype/', root));
 
 const TITLE = '<title>Contour — AI Travel Itinerary Builder</title>';
 
@@ -38,7 +49,8 @@ html = html.replace(
 
 await mkdir(OUT_DIR, { recursive: true });
 await writeFile(OUT, html);
-await copyFile(RUNTIME, OUT_DIR + 'support.js');
+await mkdir(PUBLIC_RUNTIME_DIR, { recursive: true });
+await copyFile(RUNTIME, PUBLIC_RUNTIME_DIR + 'support.js');
 
 const checks = [
   ['has a title', html.includes(TITLE)],
@@ -47,4 +59,4 @@ const checks = [
 ];
 for (const [label, pass] of checks) console.log((pass ? '  ok    ' : '  FAIL  ') + label);
 if (checks.some(([, p]) => !p)) process.exit(1);
-console.log('  built public/prototype/ (' + Math.round(html.length / 1024) + ' KB)');
+console.log('  built prototype-build/index.html (' + Math.round(html.length / 1024) + ' KB), runtime in public/prototype/');

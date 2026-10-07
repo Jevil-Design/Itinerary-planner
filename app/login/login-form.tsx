@@ -157,14 +157,6 @@ export default function LoginForm() {
             </form>
           )}
 
-          <p className="mt-8 text-[12.5px] leading-relaxed text-ink3">
-            Signing in creates no account and stores no record of you. The planner works the same
-            either way — you can{' '}
-            <a href="/prototype/" className="text-terracotta underline">
-              open it without signing in
-            </a>
-            .
-          </p>
         </div>
       </div>
     </main>

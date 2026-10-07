@@ -17,7 +17,9 @@ export async function GET() {
     return new Response(null, { status: 307, headers: { location: '/login' } });
   }
 
-  const file = join(process.cwd(), 'public', 'prototype', 'index.html');
+  // Outside public/ deliberately: a copy served statically would be a way past
+  // this very gate. Only this route, after the session check, can read it.
+  const file = join(process.cwd(), 'prototype-build', 'index.html');
   const raw = await readFile(file, 'utf8');
 
   /**
