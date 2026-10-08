@@ -192,3 +192,51 @@ export async function getTrip(supabase: SupabaseClient, tripId: string) {
     },
   };
 }
+
+/**
+ * Stores the generated plan whole, as JSON, one row per trip.
+ *
+ * Upsert on trip_id rather than insert: section 7 is explicit that editing or
+ * regenerating must update the existing record instead of accumulating
+ * duplicates, and the unique constraint plus this one call is a stronger
+ * guarantee than remembering to look first.
+ *
+ * user_id comes from the caller's verified session. RLS checks it against both
+ * the row and the trip, so a mismatch is rejected by the database rather than
+ * trusted here.
+ */
+export async function saveItinerarySnapshot(
+  supabase: SupabaseClient,
+  userId: string,
+  tripId: string,
+  itinerary: Itinerary,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { error } = await supabase
+    .from('itineraries')
+    .upsert(
+      {
+        trip_id: tripId,
+        user_id: userId,
+        itinerary_data: itinerary as unknown as Record<string, unknown>,
+        generated_at: itinerary.generatedAt,
+      },
+      { onConflict: 'trip_id' },
+    );
+
+  if (error) {
+    console.error('[saveItinerarySnapshot]', error.code, error.message);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
+
+/** The stored plan for one trip, or null. RLS scopes this to the owner. */
+export async function getItinerarySnapshot(supabase: SupabaseClient, tripId: string) {
+  const { data, error } = await supabase
+    .from('itineraries')
+    .select('itinerary_data, generated_at, updated_at')
+    .eq('trip_id', tripId)
+    .maybeSingle();
+  if (error) return { ok: false as const, error: error.message };
+  return { ok: true as const, data };
+}

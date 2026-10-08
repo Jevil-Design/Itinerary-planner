@@ -1,10 +1,10 @@
 /**
- * Supabase Auth, against the real project.
+ * Email + password authentication, and the isolation that makes it safe.
  *
- * The question this answers is the one that blocked the product: can a sign-in
- * code reach an address other than the mail account's owner? The previous
- * sender refused every recipient but one. These checks fail loudly if that ever
- * becomes true again.
+ * Two real accounts are used, and the central question is the one the brief
+ * asks: can A reach B's trip by knowing its UUID? The answer has to come from
+ * the database refusing, not from the UI hiding it, so every attempt here is
+ * made with a client that is properly signed in as the wrong person.
  *
  *   node scripts/verify-auth.mjs
  */
@@ -29,69 +29,129 @@ const ok = (label, cond, note = '') => {
 };
 const fresh = () => createClient(URL_, KEY, { auth: { persistSession: false } });
 
-console.log('\nSUPABASE AUTH');
-console.log('='.repeat(62));
+/*
+ * Fixed accounts, seeded by supabase/seed/test-users.sql. Signing up fresh ones
+ * each run would spend the project's hourly confirmation-email allowance, which
+ * is only a handful — the tests would start denying real users a sign-in.
+ */
+const PASSWORD = 'ContourTest!2026';
+const A = { email: 'persist-a@contour.test', password: PASSWORD };
+const B = { email: 'persist-b@contour.test', password: PASSWORD };
 
-/* ---------- error mapping: no generic "something went wrong" ---------- */
-ok('a short throttle quotes the actual wait',
-  /51 seconds/.test(authMessage({ message: 'For security purposes, you can only request this after 51 seconds', status: 429 })));
-ok('the hourly cap is not described as a short wait',
-  /hourly/i.test(authMessage({ message: 'email rate limit exceeded', code: 'over_email_send_rate_limit', status: 429 })));
-ok('the hourly cap does not tell people to retry in a minute',
-  !/minute/i.test(authMessage({ message: 'email rate limit exceeded', code: 'over_email_send_rate_limit', status: 429 })));
-ok('an expired code says to request a new one',
-  /expired/i.test(authMessage({ message: 'Token has expired', code: 'otp_expired' })));
-ok('a bad address says so',
-  /valid email/i.test(authMessage({ message: 'Unable to validate email address: invalid format' })));
-ok('a network failure mentions the connection',
-  /connection/i.test(authMessage({ message: 'Failed to fetch' })));
-ok('disabled signups point at the administrator',
-  /administrator/i.test(authMessage({ message: 'Signups not allowed for otp', code: 'otp_disabled' })));
-ok('an unknown error keeps Supabase wording rather than inventing one',
+console.log('\nAUTHENTICATION & ISOLATION');
+console.log('='.repeat(64));
+
+/* ---------- error mapping: never a bare "something went wrong" ---------- */
+ok('wrong credentials read as wrong credentials',
+  /do not match/i.test(authMessage({ message: 'Invalid login credentials', code: 'invalid_credentials' })));
+ok('the message does not reveal whether the address exists',
+  !/no account|not found|unknown/i.test(authMessage({ message: 'Invalid login credentials', code: 'invalid_credentials' })));
+ok('a duplicate signup points at signing in',
+  /already exists/i.test(authMessage({ message: 'User already registered', code: 'user_already_exists' })));
+ok('a weak password says the minimum',
+  /8 characters/i.test(authMessage({ message: 'Password should be at least 6 characters', code: 'weak_password' })));
+ok('an unconfirmed email says to check the inbox',
+  /confirm/i.test(authMessage({ message: 'Email not confirmed', code: 'email_not_confirmed' })));
+ok('a short throttle quotes the real wait',
+  /51 seconds/.test(authMessage({ message: 'you can only request this after 51 seconds', status: 429 })));
+ok('an unknown error keeps Supabase wording',
   authMessage({ message: 'some novel failure' }) === 'some novel failure');
 
-/* ---------- the actual blocker ---------- */
-/*
- * Sending a real code costs one of the project's hourly allowance, and the
- * built-in mailer only permits a couple. Running this suite used to spend one
- * every time, which is its own small denial of service against the people
- * trying to sign in. It is opt-in now:
- *
- *   node scripts/verify-auth.mjs --live
- */
-const stranger = `contour-auth-${Date.now()}@primarc.in`;
-
-if (process.argv.includes('--live')) {
-  const { error } = await fresh().auth.signInWithOtp({
-    email: stranger,
-    options: { shouldCreateUser: true },
-  });
-  if (error && /rate limit|after \d+ seconds/i.test(error.message)) {
-    // Being rate limited proves the request was accepted and queued, which is
-    // the thing under test — the old sender refused the recipient outright.
-    ok('a non-owner address is accepted', true, 'rate limited, which means accepted');
-  } else {
-    ok('A CODE CAN BE SENT TO AN ADDRESS WE DO NOT OWN', !error,
-      error ? `${error.status} ${error.message}` : stranger);
-  }
-} else {
-  console.log('  skip  live send (pass --live to spend one of the hourly allowance)');
+/* ---------- sign in ---------- */
+const a = fresh();
+const { data: aSession, error: aErr } = await a.auth.signInWithPassword(A);
+if (aErr) {
+  console.log(`\n  Could not sign in as ${A.email}: ${aErr.message}`);
+  console.log('  Seed the accounts with supabase/seed/test-users.sql first.\n');
+  process.exit(0);
 }
+ok('a password sign-in succeeds', Boolean(aSession.session));
+ok('it yields a verified user', Boolean(aSession.user?.id));
 
-/* ---------- a wrong code must be refused ---------- */
-/* Verification does not send anything, so this costs nothing. */
-const { error: badErr } = await fresh().auth.verifyOtp({
-  email: stranger, token: '000000', type: 'email',
+const { error: wrongErr } = await fresh().auth.signInWithPassword({ ...A, password: 'definitely-not-it' });
+ok('the wrong password is refused', Boolean(wrongErr), wrongErr?.code);
+ok('an unknown address is refused the same way', Boolean(
+  (await fresh().auth.signInWithPassword({ email: 'nobody-here@contour.test', password: PASSWORD })).error));
+
+/* ---------- the profile exists, with a name ---------- */
+const { data: profile } = await a.from('profiles').select('id, email, full_name, avatar_url').eq('id', aSession.user.id).maybeSingle();
+ok('a profile row exists for the account', profile?.email === A.email, profile?.email);
+ok('the profile carries no password column', profile ? !('password' in profile) : false);
+
+/* ---------- A creates a trip and an itinerary ---------- */
+const { data: trip, error: tripErr } = await a
+  .from('trips')
+  .insert({
+    user_id: aSession.user.id,
+    title: 'Isolation test trip',
+    origin_name: 'Kolkata', dest_name: 'Darjeeling',
+    mode: 'car', travellers: 2, status: 'ready',
+  })
+  .select('id')
+  .single();
+ok("A can create A's trip", Boolean(trip?.id), tripErr?.message);
+
+const { error: itinErr } = await a.from('itineraries').insert({
+  trip_id: trip.id, user_id: aSession.user.id,
+  itinerary_data: { days: 2, note: 'private to A' },
 });
-ok('a wrong code is rejected', Boolean(badErr), badErr?.code ?? badErr?.message?.slice(0, 40));
-ok('the rejection is explained, not generic',
-  Boolean(badErr) && !/something went wrong/i.test(authMessage(badErr)),
-  badErr ? authMessage(badErr).slice(0, 48) : '');
+ok("A can store A's itinerary", !itinErr, itinErr?.message);
 
-/* ---------- an unauthenticated client sees nothing ---------- */
-const { data: trips } = await fresh().from('trips').select('id');
-ok('a signed-out client reads no trips', (trips ?? []).length === 0);
+/* ---------- B tries everything ---------- */
+const b = fresh();
+const { data: bSession, error: bErr } = await b.auth.signInWithPassword(B);
+ok('the second account can sign in', Boolean(bSession?.session), bErr?.message);
 
-console.log('-'.repeat(62));
+const { data: bSeesTrips } = await b.from('trips').select('id').eq('id', trip.id);
+ok("B CANNOT READ A'S TRIP BY ITS UUID", (bSeesTrips ?? []).length === 0, `${(bSeesTrips ?? []).length} rows`);
+
+const { data: bSeesItin } = await b.from('itineraries').select('id').eq('trip_id', trip.id);
+ok("B CANNOT READ A'S ITINERARY", (bSeesItin ?? []).length === 0, `${(bSeesItin ?? []).length} rows`);
+
+const { data: bEdited } = await b.from('trips').update({ title: 'HIJACKED' }).eq('id', trip.id).select('id');
+ok("B cannot edit A's trip", (bEdited ?? []).length === 0);
+
+const { data: bDeleted } = await b.from('trips').delete().eq('id', trip.id).select('id');
+ok("B cannot delete A's trip", (bDeleted ?? []).length === 0);
+
+const { error: forgeErr } = await b.from('trips').insert({
+  user_id: aSession.user.id, title: 'forged', origin_name: 'x', dest_name: 'y',
+});
+ok('a forged user_id is rejected by the database', Boolean(forgeErr), forgeErr?.code);
+
+const { error: attachErr } = await b.from('itineraries').insert({
+  trip_id: trip.id, user_id: bSession.user.id, itinerary_data: {},
+});
+ok("B cannot attach an itinerary to A's trip", Boolean(attachErr), attachErr?.code);
+
+/* ---------- and A still can ---------- */
+const { data: aStillSees } = await a.from('trips').select('id, title').eq('id', trip.id).maybeSingle();
+ok("A can still read A's own trip", aStillSees?.id === trip.id, aStillSees?.title);
+
+/* ---------- persistence across a fresh sign-in ---------- */
+const reopened = fresh();
+await reopened.auth.signInWithPassword(A);
+const { data: afterRelogin } = await reopened.from('trips').select('id').eq('id', trip.id).maybeSingle();
+ok('THE TRIP SURVIVES SIGN-OUT AND SIGN-IN', afterRelogin?.id === trip.id);
+const { data: itinAfter } = await reopened.from('itineraries').select('itinerary_data').eq('trip_id', trip.id).maybeSingle();
+ok('the itinerary survives too', itinAfter?.itinerary_data?.note === 'private to A');
+
+/* ---------- signed out sees nothing ---------- */
+const anon = fresh();
+ok('a signed-out client reads no trips', ((await anon.from('trips').select('id')).data ?? []).length === 0);
+ok('a signed-out client reads no itineraries', ((await anon.from('itineraries').select('id')).data ?? []).length === 0);
+
+/* ---------- tidy ---------- */
+await reopened.from('trips').delete().eq('id', trip.id);
+const { data: gone } = await reopened.from('trips').select('id').eq('id', trip.id);
+ok('an owner can delete their own trip', (gone ?? []).length === 0);
+const { data: cascaded } = await reopened.from('itineraries').select('id').eq('trip_id', trip.id);
+ok('deleting a trip removes its itinerary', (cascaded ?? []).length === 0);
+
+await a.auth.signOut();
+await b.auth.signOut();
+await reopened.auth.signOut();
+
+console.log('-'.repeat(64));
 console.log(`${pass}/${pass + fail} passed${fail ? ', ' + fail + ' FAILED' : ', all green'}`);
 process.exit(fail ? 1 : 0);

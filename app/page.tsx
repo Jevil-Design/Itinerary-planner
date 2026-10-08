@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import NextImage from 'next/image';
-import { currentSession } from '@/lib/session';
+import { getCurrentUser } from '@/lib/auth/user';
 import imagery from './imagery.json';
 
 export const dynamic = 'force-dynamic';
@@ -35,12 +35,12 @@ const FAQ = [
   },
   {
     q: 'Why sign in at all, then?',
-    a: 'A one-time code on your email, and nothing else. No password to remember, no profile, no history kept.',
+    a: 'An email address and a password. Your trips are saved to your account, so they are there when you come back and on any device you sign in from.',
   },
 ];
 
 export default async function Landing() {
-  const user = await currentSession();
+  const user = await getCurrentUser();
   const hero = pick('sikkim');
 
   return (

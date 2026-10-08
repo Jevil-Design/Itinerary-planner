@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Contour — plan the whole trip in minutes',
     description:
-      'Three fields in, a full day-by-day plan out. Nothing is stored on a server.',
+      'Three fields in, a full day-by-day plan out. Saved to your account, ready on any device.',
     type: 'website',
   },
   robots: { index: true, follow: true },

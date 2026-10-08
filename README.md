@@ -3,135 +3,157 @@
 Give it a source, a destination and dates. It builds the route, the day-by-day
 schedule, what to pack and what it costs.
 
-**Supabase is the backend of record.** Accounts, trips, itineraries and budgets
-live there behind Row Level Security, so the database rather than the app decides
-who can read them. The planner UI does not write to it yet — that migration is in
-progress, and until it lands a trip still lives only in the browser tab.
+**Supabase is the backend of record.** Accounts, profiles, trips and the
+itineraries they generate all live there, behind Row Level Security — so the
+database, not the application, decides who can read a row. A trip survives a
+refresh, a sign-out, and moving to another device.
 
 ---
 
 ## What is in this repository
 
-| Path | What it is |
+| | |
 |---|---|
-| `app/` | The site: landing page, one-time-code sign-in, and the gated planner route. |
-| `lib/` | OTP crypto, the server wrapper that holds the signing secret, email delivery, the error envelope. |
-| `prototype-build/` | The planner itself, generated from the design file. Deliberately outside `public/` — a statically served copy would be a way past the sign-in gate. Served only by `app/plan`, after the session check. |
-| `Contour - AI Travel Itinerary Builder.dc.html` | The design file. The source of truth for the planner; `prototype-build/` is built from it. |
-| `support.js` | The runtime the design file needs, beside it so it opens straight from disk. |
-| `scripts/` | Build and verification: prototype build, imagery fetch, OTP tests, browser tests. |
-| `app/imagery.json` | Destination photography: source URL, subject, licence and author for each image. |
+| `app/` | The site: landing page, email and password sign-in, the dashboard, and the gated planner. |
+| `lib/` | Supabase clients, the authenticated-user helpers, trip persistence, the travel providers and the planning engine. |
+| `middleware.ts` | Refreshes the Supabase session and guards the private routes. |
+| `supabase/` | Migrations and development seed data. |
+| `prototype-build/` | The planner, generated from the design file. Deliberately outside `public/` — a statically served copy would be a way past the sign-in gate. Served only by `app/plan`, after the session check. |
+| `Contour - AI Travel Itinerary Builder.dc.html` | The design file. The source of truth for the planner. |
+| `scripts/` | Build and verification: prototype build, imagery fetch, auth and isolation tests, persistence tests, browser tests. |
+| `docs/` | Authentication setup, and the DNS request for the sending subdomain. |
 
 ---
 
-## Storage
+## Architecture
 
-There is no database, no session table, no user record.
+```
+Browser
+  └─ Next.js (App Router)
+       └─ Supabase SSR auth          middleware refreshes the token
+            └─ authenticated user     derived from a verified JWT, never from the request
+                 └─ Supabase Postgres
+                      profiles · trips · trip_days · itinerary_items · itineraries
+                      budget_items · expenses · packing_items · bookings
+                      saved_places · trip_shares · ai_generations · provider_cache
+```
 
-| Lives where | What |
-|---|---|
-| Browser memory | The whole trip. Lost on refresh, by design. |
-| Signed cookie | The OTP challenge during sign-in, and the session afterwards. |
-| Nowhere | Everything else. |
-
-A consequence worth stating plainly: **a trip does not survive a refresh**, and
-cannot be opened on another device. That is the storage posture asked for, not
-an oversight. Export before closing the tab.
+Row Level Security is on for every table. Policies are written against
+`auth.uid()`, so a trip id arriving from a browser is safe to use directly: if
+it belongs to someone else the query returns nothing. Writing a row with a
+forged `user_id` fails with `42501` — verified in `npm run test:auth`, not
+assumed.
 
 ---
 
 ## Sign-in
 
-A six-digit code by email, issued and verified by Supabase Auth. No password,
-and no other method.
+Email and password, through Supabase Auth. Supabase holds the credential — no
+password is hashed, stored or compared by this application.
 
-This replaced a self-rolled sender that could only reach one address — see
-[docs/authentication.md](docs/authentication.md) for what went wrong, how the
-flow works now, and the two dashboard settings production needs.
+| Route | |
+|---|---|
+| `/login` | sign in, with links to reset and register |
+| `/signup` | full name, email, password; the name reaches the profile through the signup trigger |
+| `/forgot-password` | sends a reset link |
+| `/reset-password` | sets the new password, then signs out everywhere |
+| `/auth/callback` | exchanges an emailed link for a session |
 
-- `middleware.ts` refreshes the access token and guards `/dashboard`, `/trips` and `/plan`
-- `/auth/callback` handles an emailed link, in either shape Supabase can send
-- Sessions are read with `getUser()`, never `getSession()` — the latter only decodes a cookie the browser owns
+Sessions are read with `getUser()`, never `getSession()`: the latter only
+decodes a cookie the browser owns, so it will accept one a user has edited.
 
-```sh
-npm run test:auth    # error mapping, and that a code reaches an address we do not own
+See [docs/authentication.md](docs/authentication.md) for the two dashboard
+settings production needs.
+
+---
+
+## Travel data
+
+The planner uses real providers, and says where every value came from.
+
+| Provider | For | Key needed |
+|---|---|---|
+| OSRM | route, distance, driving time, geometry | no |
+| Nominatim | turning a place name into coordinates | no |
+| Open-Meteo | forecast per day | no |
+| Google Places | restaurants, fuel, hotels at each stop | yes, optional |
+| Overpass (OpenStreetMap) | the keyless fallback for places | no |
+
+Every value carries its provenance: **verified** with a named source,
+**estimated** with its basis stated, or **unavailable**. Nothing is invented —
+when a provider cannot answer, the itinerary says so rather than filling the gap.
+
+Overpass is a genuine fallback rather than a recommendation: measured against a
+636 km route, the public mirrors timed out at 70 seconds on an eight-point
+query. Set `GOOGLE_PLACES_API_KEY` for places that actually resolve.
+
+---
+
+## Environment variables
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SERVICE_ROLE_KEY=      # server only; bypasses RLS
+GOOGLE_PLACES_API_KEY=          # optional; without it places degrade honestly
 ```
+
+Only the two `NEXT_PUBLIC_` values reach the browser, by design: the publishable
+key is meant to be public and RLS is what protects the data. The service-role
+key lives in `lib/supabase/server.ts`, which is marked `server-only`, so
+importing it from a client component fails the build rather than shipping a
+secret.
+
+`.env.local` is gitignored and must stay that way.
+
+---
 
 ## Running it
 
-```bash
-cp .env.example .env.local
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"   # AUTH_SECRET
+```sh
 npm install
 npm run dev
 ```
 
-Without `RESEND_API_KEY` and `EMAIL_FROM`, the code-request endpoint refuses
-with a clear message rather than pretending a code was sent. The planner itself
-needs a signed-in session and is served only at `/plan`.
+The planner is generated from the design file before every build. Do not edit
+`prototype-build/` by hand — `prebuild` overwrites it.
 
 ---
 
 ## Verifying
 
-```bash
-npm run test:otp        # 21 checks: forgery, tampering, brute force, expiry
-npm run test:email      # 14 checks: provider choice, a real SMTP send, no leaks
-npm run test:session    # 6 steps: a real session opens the planner, not a 2nd login
-npm run test:browser    # 27 steps through the planner in real Chromium
-node scripts/browser-test-site.mjs http://127.0.0.1:3400   # the site itself
-npm run typecheck && npm run build
+```sh
+npm run typecheck
+npm run build
+npm run test:auth         # 29 checks: sign-in, errors, and cross-user isolation
+npm run test:persistence  # 14 checks: a trip surviving a fresh sign-in
+npm run test:plan         # 55 checks: the stop engine, offline
+npm run test:browser      # 27 steps through the planner in real Chromium
+npm run test:site -- http://127.0.0.1:3400
 ```
 
-`npm run build` runs `build:prototype` first, which regenerates
-`public/prototype/` from the design file. Do not hand-edit anything under
-`public/prototype/` — it is generated and the build will overwrite it.
-
----
-
-## Imagery
-
-`app/imagery.json` is built by `npm run fetch:imagery`, which pulls openly
-licensed destination photographs from Wikimedia Commons and records the subject,
-licence and author of each. Commons rather than a stock-photo id pasted from
-memory, because Commons says what the picture actually shows. Only permissive
-licences are kept, and the credit line in the footer is required by them.
+`test:auth` is the one that matters most. It signs in as two real accounts and
+tries, as B, to read, edit, delete and attach to A's trip by its UUID. Every
+attempt must fail in the database.
 
 ---
 
 ## Deploying
 
-Three things have each broken this deployment, all now handled in the repo:
+Vercel, from `main`. `vercel.json` sets the framework preset — without it the
+build output is served as a static directory and every route but `/` 404s.
 
-**`vercel.json` pins `framework: nextjs`. Do not remove it.** The project was
-created as a static site, so its preset was `null`; Vercel still ran `next build`
-and reported success, then served the output as a plain directory. Static files
-resolved and every server route 404d — `/prototype` worked while `/` did not,
-which looks like a routing bug and is not one.
-
-**Vercel blocks a vulnerable Next.js version *after* a successful build.** The
-log ends `Build Completed` then `Vulnerable version of Next.js detected`, and the
-deployment goes red. Run `npm audit` before wondering why a green build will not
-go live.
-
-**`/prototype` needs an absolute script path.** Next strips the trailing slash,
-so a relative `./support.js` resolves to `/support.js`, 404s, returns HTML, and
-the browser refuses the script — leaving the raw template on screen.
-`scripts/build-prototype.mjs` handles this and runs on `prebuild`.
-
-Environment variables in Vercel: `AUTH_SECRET`, and `RESEND_API_KEY` +
-`EMAIL_FROM` once you want codes delivered.
+Environment variables are injected at deploy time, so one added after a
+deployment does not reach it. Add the variable, then redeploy.
 
 ---
 
 ## What is not built
 
-No AI, routing, places, weather or hotel provider is wired. The planner
-generates the part that follows from your inputs — days with real dates, the
-route legs, a packing list keyed to travel mode, the pre-trip checklist and the
-budget categories. Activities inside each day, stays, restaurants, sightseeing,
-weather and measured distances need those providers and are deliberately left
-empty rather than invented.
+No AI provider is wired. Activities inside each day, stays, restaurants and
+sightseeing are generated from real places where a provider answers, and left
+empty rather than invented where none does.
 
-Also not built: PDF and Excel export, share links, collaborators, conflict
-detection, notifications, multi-currency and timezone handling.
+Also not built: PDF and Excel export, share links in the UI, collaborators,
+conflict detection, drag-and-drop reordering, the map, and the AI assistant. The
+database and the planning engine they depend on are in place.

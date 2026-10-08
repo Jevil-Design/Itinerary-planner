@@ -15,7 +15,10 @@ import { NextResponse, type NextRequest } from 'next/server';
  */
 
 const PROTECTED = ['/dashboard', '/trips', '/plan'];
-const AUTH_PAGES = ['/login'];
+// Signed-in users have no business on these; they get the dashboard instead.
+// /reset-password is deliberately absent: arriving there WITH a session is the
+// normal case, because the emailed link signs you in before you set the new one.
+const AUTH_PAGES = ['/login', '/signup', '/forgot-password'];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });

@@ -1,5 +1,5 @@
 /**
- * Browser test for the redesigned site: landing, the one-time-code sign-in, the
+ * Browser test for the site: landing, the email and password sign-in, the
  * gated planner, and every viewport width.
  *
  *   node scripts/browser-test-site.mjs http://127.0.0.1:3400
@@ -14,7 +14,7 @@ const steps = [];
 // The auth rate limit is the same: the app logs it on purpose and shows the
 // user a real message, so it is handled behaviour rather than a fault.
 const IGNORABLE =
-  /favicon|_next\/static\/media|ERR_ABORTED|status of (4\d\d|5\d\d)|over_email_send_rate_limit|signInWithOtp 429/i;
+  /favicon|_next\/static\/media|ERR_ABORTED|status of (4\d\d|5\d\d)|over_email_send_rate_limit|signInWithPassword 4/i;
 const BAD_TEXT = /\{\{|\bundefined\b|\bNaN\b|Invalid Date|\[object Object\]/;
 
 const browser = await chromium.launch();
@@ -72,40 +72,47 @@ await step('sign-in page renders', async () => {
   if (!(await page.locator('input[type="email"]').count())) throw new Error('no email field');
 });
 
-await step('the email form is server-rendered', async () => {
-  const res = await fetch(base + '/login');
-  const html = await res.text();
-  // must be in the HTML, not injected after hydration
-  if (!/Send code/.test(html)) throw new Error('email form missing from server HTML');
-  if (!/type="email"/.test(html)) throw new Error('email field missing from server HTML');
-});
-
-await step('no other sign-in method is offered', async () => {
+await step('the sign-in form is server-rendered', async () => {
   const html = await (await fetch(base + '/login')).text();
-  /*
-   * The product offers exactly one way in. A stray button for a route that no
-   * longer exists would be a dead control, which is worse than none.
-   *
-   * Matched against markup, not prose: the page says "No password" as a
-   * statement of fact, and a bare /password/ would flag that as a password
-   * form. What must not exist is an actual field or an OAuth link.
-   */
-  for (const gone of [
-    /Continue with Google/i,
-    /accounts\.google\.com/i,
-    /type="password"/i,
-    /\/api\/auth\/google/i,
-  ]) {
-    if (gone.test(html)) throw new Error('an extra sign-in method is on the page: ' + gone);
-  }
+  // In the server HTML, not injected after hydration.
+  if (!/Log in/.test(html)) throw new Error('sign-in button missing from server HTML');
+  if (!/type="email"/.test(html)) throw new Error('email field missing from server HTML');
+  if (!/type="password"/.test(html)) throw new Error('password field missing from server HTML');
 });
 
-await step('the removed Google routes are really gone', async () => {
-  for (const path of ['/api/auth/google/start', '/api/auth/google/callback']) {
-    const res = await fetch(base + path, { redirect: 'manual' });
-    // 404 is the point. A 303 would mean the route still exists.
+await step('registration and password reset are reachable', async () => {
+  for (const path of ['/signup', '/forgot-password']) {
+    const res = await fetch(base + path);
+    if (!res.ok) throw new Error(path + ' answered ' + res.status);
+  }
+  const html = await (await fetch(base + '/login')).text();
+  if (!/Forgot password/i.test(html)) throw new Error('no link to password reset');
+  if (!/Create account/i.test(html)) throw new Error('no link to registration');
+});
+
+await step('the removed one-time-code routes are gone', async () => {
+  for (const path of ['/api/auth/otp/request', '/api/auth/otp/verify', '/api/auth/google/start']) {
+    const res = await fetch(base + path, { method: 'POST', redirect: 'manual' });
     if (res.status !== 404) throw new Error(path + ' answered ' + res.status + ', expected 404');
   }
+});
+
+await step('a wrong password is refused and explained', async () => {
+  await page.goto(base + '/login', { waitUntil: 'networkidle' });
+  await page.locator('input[type="email"]').fill('nobody-here@contour.test');
+  await page.locator('input[type="password"]').fill('definitely-not-it');
+  await page.getByRole('button', { name: /log in/i }).click();
+  await page.waitForTimeout(3500);
+  const t = await text();
+  if (!/do not match|wait|too many/i.test(t)) {
+    throw new Error('no clear message for a bad sign-in: ' + t.slice(0, 160));
+  }
+  // The refusal must not say whether the address exists — that would let
+  // anyone test which addresses are registered here.
+  if (/no account|not found|unknown (email|address)/i.test(t)) {
+    throw new Error('the error reveals whether the account exists');
+  }
+  if (/definitely-not-it/.test(t)) throw new Error('the password is echoed on the page');
 });
 
 await step('planner is gated', async () => {
@@ -113,25 +120,6 @@ await step('planner is gated', async () => {
   if (!/\/login/.test(page.url())) throw new Error('reached /plan without a session: ' + page.url());
 });
 
-await step('requesting a code moves to the verification step', async () => {
-  await page.goto(base + '/login', { waitUntil: 'networkidle' });
-  await page.locator('input[type="email"]').fill(`site-test-${Date.now()}@primarc.in`);
-  await page.getByRole('button', { name: /send code/i }).click();
-  await page.waitForTimeout(4000);
-  const t = await text();
-  /*
-   * Two honest outcomes. Either the form advances to "Check your email", or
-   * Supabase's built-in mailer says it is rate limited — which is itself proof
-   * the request was accepted rather than refused for the recipient.
-   */
-  const advanced = /Check your email|six-digit code/i.test(t);
-  const limited = /wait|rate|too many/i.test(t);
-  if (!advanced && !limited) {
-    throw new Error('no clear outcome from the code request: ' + t.slice(0, 180));
-  }
-  if (/\b\d{6}\b/.test(t) && advanced) throw new Error('a six-digit code is visible on the page');
-  if (/at Object\.|node_modules/i.test(t)) throw new Error('a raw error leaked to the page');
-});
 
 await step('the planner is not reachable without signing in', async () => {
   // It used to be served from public/, which was a way straight past the gate.

@@ -1,18 +1,18 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { currentSession } from '@/lib/session';
+import { getCurrentUser } from '@/lib/auth/user';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * The planner itself, behind the one-time-code gate.
+ * The planner itself, behind the sign-in gate.
  *
  * It is served as a document rather than rendered by React because the planner
  * is a self-contained client application: it holds the whole trip in memory and
  * writes nothing anywhere, which is exactly the storage posture asked for.
  */
 export async function GET() {
-  const session = await currentSession();
+  const session = await getCurrentUser();
   if (!session) {
     return new Response(null, { status: 307, headers: { location: '/login' } });
   }

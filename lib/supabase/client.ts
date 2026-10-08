@@ -56,23 +56,33 @@ export function authMessage(error: { message?: string; status?: number; code?: s
   if (/invalid.*email|email.*invalid|unable to validate email/.test(m)) {
     return 'That does not look like a valid email address.';
   }
-  if (code === 'otp_expired' || /expired/.test(m)) {
-    return 'That code has expired. Request a new one.';
+  /*
+   * The most common failure by far, and the one where wording matters most.
+   * Supabase answers the same way whether the address is unknown or the
+   * password is wrong, and that is deliberate — saying which would let anyone
+   * test whether an address has an account here. The message keeps that
+   * property rather than guessing.
+   */
+  if (code === 'invalid_credentials' || /invalid login credentials/.test(m)) {
+    return 'That email and password do not match an account.';
   }
-  if (code === 'otp_disabled' || /signups not allowed|signup is disabled/.test(m)) {
-    return 'Sign-in by email is turned off for this deployment. Contact the administrator.';
+  if (code === 'user_already_exists' || /already registered|user already/.test(m)) {
+    return 'An account already exists for that email. Try signing in instead.';
   }
-  if (/invalid.*(token|otp|code)|token has expired or is invalid/.test(m)) {
-    return 'That code is not right. Check it and try again, or request a new one.';
+  if (code === 'weak_password' || /password should be at least|password is too short/.test(m)) {
+    return 'Choose a password of at least 8 characters.';
   }
-  if (/email.*not.*confirmed/.test(m)) {
-    return 'This address has not been confirmed yet. Request a new code.';
+  if (code === 'same_password' || /should be different from the old password/.test(m)) {
+    return 'That is your current password. Choose a different one.';
   }
-  if (/failed to fetch|network|econnrefused/.test(m)) {
-    return "We couldn't reach the sign-in service. Check your connection and try again.";
+  if (code === 'email_not_confirmed' || /email not confirmed/.test(m)) {
+    return 'Confirm your email address first — check your inbox for the link we sent.';
   }
-  if (/email.*disabled|provider.*disabled/.test(m)) {
-    return 'Email sign-in is currently unavailable. Contact the administrator.';
+  if (code === 'signup_disabled' || /signups not allowed/.test(m)) {
+    return 'New accounts are turned off for this deployment. Contact the administrator.';
+  }
+  if (/expired|invalid.*token/.test(m)) {
+    return 'That link has expired or was already used. Request a new one.';
   }
   // Fall back to Supabase's own wording rather than inventing one: it is
   // usually more specific than anything generic we could substitute.

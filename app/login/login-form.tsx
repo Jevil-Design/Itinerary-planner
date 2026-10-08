@@ -2,114 +2,72 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { browserClient, authMessage } from '@/lib/supabase/client';
+import { PasswordField, Alert, Notice } from './fields';
 
 /**
- * Sign-in: an emailed code, and nothing else.
+ * Sign in with an email address and a password, through Supabase Auth.
  *
- * This goes through Supabase Auth rather than the previous custom sender. That
- * is the fix for codes only ever reaching one address — the old path used a
- * shared sandbox sender that refuses any recipient but the account owner, while
- * Supabase sends to anyone.
- *
- * The code field also accepts a link: if the project's email template sends a
- * magic link instead of a six-digit token, that link lands on /auth/callback
- * and signs the user in there. Which of the two arrives is a dashboard setting,
- * so both are supported.
+ * No password is ever hashed, stored or compared here. Supabase holds the
+ * credential; this form only hands it over and reads the answer. That is the
+ * point of using the platform's auth rather than rolling one.
  */
-
-type Stage = 'email' | 'code';
-
-const RESEND_SECONDS = 45;
-
-export default function LoginForm({ initialError = '' }: { initialError?: string }) {
+export default function LoginForm({
+  initialError = '',
+  next = '/dashboard',
+  notice = '',
+}: {
+  initialError?: string;
+  next?: string;
+  notice?: string;
+}) {
   const router = useRouter();
-  const [stage, setStage] = useState<Stage>('email');
+
   const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState(initialError);
-  const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
-  const codeRef = useRef<HTMLInputElement>(null);
 
-  // Countdown for the resend link, so the button is not simply dead.
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const t = setTimeout(() => setCooldown((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [cooldown]);
+  /*
+   * next and notice arrive as props from the server page rather than through
+   * useSearchParams. That hook opts the whole subtree out of server rendering,
+   * which left /login shipping 8 KB with no form in it — the fields appeared
+   * only once JavaScript had run.
+   */
 
-  useEffect(() => {
-    if (stage === 'code') codeRef.current?.focus();
-  }, [stage]);
-
-  async function sendCode(e?: React.FormEvent) {
-    e?.preventDefault();
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
     setError('');
-    setNotice('');
+
     const address = email.trim();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(address)) {
       setError('Please enter a valid email address.');
       return;
     }
-
-    setBusy(true);
-    try {
-      const supabase = browserClient();
-      const { error: err } = await supabase.auth.signInWithOtp({
-        email: address,
-        options: {
-          shouldCreateUser: true,
-          // Only used if the template sends a link rather than a code.
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (err) {
-        // The real error is kept for the console; the user gets the mapped one.
-        console.error('[login] signInWithOtp', err.status, err.code, err.message);
-        setError(authMessage(err));
-        return;
-      }
-      setStage('code');
-      setCooldown(RESEND_SECONDS);
-      setNotice(`We sent a code to ${address}. It may take a moment, and it can land in spam.`);
-    } catch (err) {
-      console.error('[login] signInWithOtp threw', err);
-      setError("We couldn't reach the sign-in service. Check your connection and try again.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function verify(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
-    const token = code.replace(/\D/g, '');
-    if (token.length !== 6) {
-      setError('Enter the six digits from the email.');
+    if (!password) {
+      setError('Enter your password.');
       return;
     }
 
     setBusy(true);
     try {
       const supabase = browserClient();
-      const { error: err } = await supabase.auth.verifyOtp({
-        email: email.trim(),
-        token,
-        type: 'email',
+      const { error: err } = await supabase.auth.signInWithPassword({
+        email: address,
+        password,
       });
       if (err) {
-        console.error('[login] verifyOtp', err.status, err.code, err.message);
+        // The real error goes to the console; the user reads the mapped one.
+        // Never the password, and never which half of the pair was wrong.
+        console.error('[login] signInWithPassword', err.status, err.code);
         setError(authMessage(err));
         return;
       }
-      // refresh() so the server re-reads the new session cookie before we move.
       router.refresh();
-      router.push('/dashboard');
+      router.push(next);
     } catch (err) {
-      console.error('[login] verifyOtp threw', err);
+      console.error('[login] signInWithPassword threw', err);
       setError("We couldn't reach the sign-in service. Check your connection and try again.");
     } finally {
       setBusy(false);
@@ -124,110 +82,64 @@ export default function LoginForm({ initialError = '' }: { initialError?: string
             Contour
           </Link>
 
-          {stage === 'email' ? (
-            <form onSubmit={sendCode} noValidate className="mt-6">
-              <h1 className="display m-0 text-[34px]">Sign in</h1>
-              <p className="mb-6 mt-2 text-[14.5px] text-ink2">
-                Enter your email and we&rsquo;ll send you a six-digit code. No password.
-              </p>
+          <form onSubmit={submit} noValidate className="mt-6">
+            <h1 className="display m-0 text-[34px]">Sign in</h1>
+            <p className="mb-6 mt-2 text-[14.5px] text-ink2">
+              Welcome back. Plan better, travel smarter.
+            </p>
 
-              {error && <Alert>{error}</Alert>}
+            {error && <Alert>{error}</Alert>}
+            {notice && !error && <Notice>{notice}</Notice>}
 
-              <label className="mb-1.5 block text-[10px] uppercase tracking-[0.14em] text-ink3" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                autoFocus
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded border border-line2 bg-white px-3.5 py-3.5 text-[15px] text-ink outline-none focus:border-ink"
+            <label className="mb-1.5 block text-[10px] uppercase tracking-[0.14em] text-ink3" htmlFor="email">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              autoFocus
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full rounded border border-line2 bg-white px-3.5 py-3.5 text-[15px] text-ink outline-none focus:border-ink"
+            />
+
+            <div className="mt-4">
+              <PasswordField
+                id="password"
+                label="Password"
+                value={password}
+                onChange={setPassword}
+                autoComplete="current-password"
               />
+            </div>
 
-              <button
-                type="submit"
-                disabled={busy}
-                className="mt-5 w-full rounded bg-terracotta py-3.5 text-[15px] font-bold text-white transition disabled:opacity-60"
-              >
-                {busy ? 'Sending…' : 'Send code'}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={verify} noValidate className="mt-6">
-              <h1 className="display m-0 text-[34px]">Check your email</h1>
-              <p className="mb-6 mt-2 text-[14.5px] text-ink2">
-                We sent a verification code to <strong className="text-ink">{email}</strong>.
-              </p>
+            <div className="mt-2 text-right">
+              <Link href="/forgot-password" className="text-[13px] font-semibold text-terracotta no-underline hover:underline">
+                Forgot password?
+              </Link>
+            </div>
 
-              {error && <Alert>{error}</Alert>}
-              {notice && !error && (
-                <p className="mt-4 rounded border border-line2 bg-sand/40 px-3.5 py-3 text-[13.5px] text-ink2">
-                  {notice}
-                </p>
-              )}
+            <button
+              type="submit"
+              disabled={busy}
+              className="mt-5 w-full rounded bg-terracotta py-3.5 text-[15px] font-bold text-white transition disabled:opacity-60"
+            >
+              {busy ? 'Signing in…' : 'Log in'}
+            </button>
 
-              <label className="mb-1.5 mt-4 block text-[10px] uppercase tracking-[0.14em] text-ink3" htmlFor="code">
-                Six-digit code
-              </label>
-              <input
-                id="code"
-                ref={codeRef}
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={6}
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="______"
-                className="w-full rounded border border-line2 bg-white px-3.5 py-3.5 text-center text-[22px] tracking-[0.5em] text-ink outline-none focus:border-ink"
-              />
-
-              <button
-                type="submit"
-                disabled={busy}
-                className="mt-5 w-full rounded bg-terracotta py-3.5 text-[15px] font-bold text-white transition disabled:opacity-60"
-              >
-                {busy ? 'Verifying…' : 'Verify'}
-              </button>
-
-              <div className="mt-5 flex items-center justify-between text-[13px]">
-                <button
-                  type="button"
-                  disabled={cooldown > 0 || busy}
-                  onClick={() => sendCode()}
-                  className="bg-transparent p-0 font-semibold text-terracotta disabled:text-ink3"
-                >
-                  {cooldown > 0 ? `Resend available in ${cooldown}s` : 'Resend code'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setStage('email'); setCode(''); setError(''); setNotice(''); }}
-                  className="bg-transparent p-0 font-semibold text-ink3"
-                >
-                  Change email
-                </button>
-              </div>
-
-              <p className="mt-6 text-[12.5px] leading-relaxed text-ink3">
-                If the email contains a link rather than a code, opening the link signs you
-                in too.
-              </p>
-            </form>
-          )}
+            <p className="mt-6 text-center text-[13.5px] text-ink2">
+              Don&rsquo;t have an account?{' '}
+              <Link href={`/signup?next=${encodeURIComponent(next)}`} className="font-semibold text-terracotta no-underline hover:underline">
+                Create account
+              </Link>
+            </p>
+          </form>
         </div>
       </div>
     </main>
-  );
-}
-
-function Alert({ children }: { children: React.ReactNode }) {
-  return (
-    <p role="alert" className="mt-4 rounded border border-danger bg-danger/5 px-3.5 py-3 text-[13.5px] text-danger">
-      {children}
-    </p>
   );
 }

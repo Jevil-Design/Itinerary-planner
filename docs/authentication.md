@@ -1,19 +1,18 @@
 # Authentication
 
-Sign-in is a six-digit code by email, issued and verified by **Supabase Auth**.
-There is no password and no other method.
+Sign-in is an email address and a password, through **Supabase Auth**. Supabase
+holds the credential; this application never hashes, stores or compares a
+password, and `profiles` has no password column.
 
 ---
 
-## The bug this replaced
+## The two problems this replaced
 
-The login page used to answer:
+### First: a sender that reached one person
 
-> The code could not be sent. Try again in a moment.
-
-That was not a Supabase problem, and not really a code problem either. The app
-sent its own codes through Resend's shared sender, `onboarding@resend.dev`.
-Resend restricts that address to one recipient, and said so plainly:
+The app used to send its own six-digit codes through Resend's shared
+`onboarding@resend.dev`. Resend restricts that address to a single recipient and
+said so plainly:
 
 ```
 HTTP 403 — "You can only send testing emails to your own email address
@@ -21,52 +20,63 @@ HTTP 403 — "You can only send testing emails to your own email address
 domain at resend.com/domains."
 ```
 
-So exactly one person could sign in. Everyone else got a 503 and an invitation
-to retry something that could never succeed.
+So exactly one person could sign in. Everyone else got a 503 inviting them to
+retry something that could never succeed.
 
-Lifting it needed a verified domain — DNS on a company zone — or SMTP
-credentials. **Supabase Auth needs neither.** Its own mailer accepts any
-recipient, which was verified before the migration was written:
+### Second: a mailer that reached two people an hour
+
+Moving codes to Supabase Auth fixed delivery — its mailer accepts any recipient,
+verified before the migration was written. But the built-in service is rate
+limited to a couple of messages an hour, so the second person to sign in within
+the hour still could not:
 
 ```
-signInWithOtp("contracts@primarc.in") → accepted
-auth.users.confirmation_sent_at       → stamped
+429 over_email_send_rate_limit
 ```
 
-An address Resend refused outright.
+A password has no such ceiling. Signing in sends no mail at all; only
+registration and password resets do, and both are one-off events rather than
+something repeated on every visit.
 
 ---
 
 ## How it works now
 
 ```
-/login
-  └─ signInWithOtp({ email })        Supabase sends the mail
-       └─ /login (code step)
-            └─ verifyOtp({ email, token, type: 'email' })
-                 └─ session cookie set, httpOnly
-                      └─ /dashboard
+/login              signInWithPassword({ email, password })
+/signup             signUp({ email, password, data: { full_name } })
+                         └─ trigger writes public.profiles
+/forgot-password    resetPasswordForEmail()
+                         └─ emailed link → /auth/callback → session
+                                              └─ /reset-password
+                                                   └─ updateUser({ password })
 ```
-
-If the project's email template sends a **link** instead of a code, that link
-lands on `/auth/callback`, which handles both shapes Supabase can produce — a
-PKCE `code`, or a `token_hash` with a `type`. Which one arrives is a dashboard
-setting rather than something the app controls, so both are supported.
 
 `middleware.ts` refreshes the access token on every request. Server Components
 cannot write cookies, so without it a signed-in user would quietly become
 signed-out when the token expired. It also guards `/dashboard`, `/trips` and
-`/plan`, and bounces a signed-in visitor away from `/login`.
+`/plan`, and bounces a signed-in visitor away from `/login` and `/signup`.
 
 Sessions are read with `getUser()`, never `getSession()`. The first verifies the
 token with the auth server; the second only decodes a cookie the browser owns,
 so it will happily accept one that has been edited.
 
+### Two deliberate choices about what the errors say
+
+A failed sign-in says *"That email and password do not match an account"* —
+never which half was wrong, and never whether the address is registered. Saying
+either would turn the form into a way to test who has an account here. The
+password-reset page confirms in the same words whether or not the address
+exists, for the same reason.
+
+Everything else is mapped to something specific: a weak password says the
+minimum, a duplicate registration points at signing in, a rate limit quotes the
+actual wait. An unrecognised error keeps Supabase's own wording rather than
+being replaced by something vaguer.
+
 ---
 
 ## Configuration you must set in the Supabase dashboard
-
-Two of these are not optional in production.
 
 ### 1. URL configuration — required
 
@@ -78,37 +88,36 @@ Two of these are not optional in production.
 | Redirect URLs | `https://itinerary-planner-virid.vercel.app/auth/callback` |
 | | `http://localhost:3000/auth/callback` |
 
-Without this, an emailed **link** redirects to whatever the Site URL says —
-typically `localhost` — and sign-in fails for everyone not on your machine. The
-six-digit code path works regardless, which is why codes are preferred.
+Without this, the confirmation and password-reset links redirect to whatever the
+Site URL says — typically `localhost` — and neither works for anyone else.
 
-### 2. Send a six-digit code, not a link — recommended
+### 2. Email confirmation — your choice
 
-**Authentication → Email Templates → Magic Link**
+**Authentication → Providers → Email → Confirm email**
 
-The default template contains only `{{ .ConfirmationURL }}`. To send a code,
-include the token:
+With it **on**, a new account must click a link before it can sign in; the
+signup form shows "Check your email" and waits. With it **off**, registration
+signs the user straight in. Both paths are implemented, so this is a policy
+decision rather than something the code constrains.
 
-```html
-<h2>Your Contour sign-in code</h2>
-<p style="font-size:30px;letter-spacing:.18em"><strong>{{ .Token }}</strong></p>
-<p>This code expires shortly and can be used once.</p>
-```
+Confirmation emails still go through the built-in mailer and still hit its
+hourly limit. If you expect more than a trickle of registrations, set custom
+SMTP under **Authentication → Emails → SMTP Settings** — any provider will do,
+including the `send.primarc.in` domain started in `docs/dns-send-primarc-in.md`
+once its DNS records are live.
 
-The app accepts either, so this changes which experience people get rather than
-whether sign-in works.
+### 3. Leaked password protection — turn this on
 
-### 3. Rate limits — the real constraint
+**Authentication → Policies → Enable leaked password protection**
 
-Supabase's built-in mailer is intended for development and is **rate limited to
-a handful of emails per hour**. This is the practical ceiling on the product
-right now, and it is low enough to matter with more than one or two users.
+Supabase can check a new password against HaveIBeenPwned and refuse ones that
+appear in a known breach. It is off by default and the project's own security
+advisor flags it. It was irrelevant while sign-in was a mailed code; now that
+accounts have passwords, it is the single highest-value setting on this page.
 
-The fix is custom SMTP: **Authentication → Emails → SMTP Settings**. Any
-provider works — the Resend domain at `send.primarc.in` that was already
-started would do, once its DNS records are live (see
-`docs/dns-send-primarc-in.md`). Supabase then sends through it and the limit
-rises to that provider's.
+The application already enforces a minimum length, and `authMessage` maps the
+`weak_password` error — so once this is enabled, a user choosing a breached
+password gets a clear explanation rather than a generic failure.
 
 ---
 
@@ -122,14 +131,15 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 Only the first two reach the browser, which is by design: the publishable key is
 meant to be public and Row Level Security is what actually protects the data.
-The service-role key bypasses RLS entirely — it lives in `lib/supabase/server.ts`,
-which is marked `server-only`, so importing it from a client component fails the
-build rather than shipping a secret.
+The service-role key bypasses RLS entirely — it lives in
+`lib/supabase/server.ts`, marked `server-only`, so importing it from a client
+component fails the build rather than shipping a secret.
 
 ---
 
 ## What is checked
 
-`npm run test:auth` covers the error mapping and, most importantly, that a code
-can still be sent to an address we do not own. That assertion exists precisely
-so the old failure cannot come back unnoticed.
+`npm run test:auth` runs 29 checks. Seven cover the error wording. The rest sign
+in as two real accounts and have B attempt to read, edit, delete and attach an
+itinerary to A's trip **by its UUID**. Every attempt must fail in the database,
+not in the interface — that assertion is the reason the suite exists.

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { currentSession } from '@/lib/session';
+import { getCurrentUser } from '@/lib/auth/user';
+import { userClient } from '@/lib/supabase/server';
+import { saveItinerary, saveItinerarySnapshot } from '@/lib/trips/persist';
 import { planTrip } from '@/lib/plan/itinerary';
 
 /**
@@ -45,8 +47,8 @@ const fail = (code: string, message: string, status: number) =>
 
 export async function POST(req: Request) {
   // Planning costs several provider calls, so it is gated like the planner.
-  const session = await currentSession();
-  if (!session) return fail('UNAUTHENTICATED', 'Sign in to plan a trip.', 401);
+  const user = await getCurrentUser();
+  if (!user) return fail('UNAUTHENTICATED', 'Sign in to plan a trip.', 401);
 
   let json: unknown;
   try {
@@ -74,8 +76,34 @@ export async function POST(req: Request) {
   const result = await planTrip({ ...parsed.data, from, to, deadlineMs: 50_000 });
   if (!result.ok) return fail('PLAN_FAILED', result.error, 502);
 
-  return NextResponse.json(result.data, {
-    // A trip is personal and nothing about it should be cached by an intermediary.
-    headers: { 'cache-control': 'no-store, private' },
-  });
+  /*
+   * Persist before answering. The user asked for a trip, not for a page that
+   * forgets it on refresh — section 7. Both writes are scoped by RLS, and the
+   * owner is the verified session rather than anything the request supplied.
+   *
+   * A failure here is reported alongside the itinerary rather than instead of
+   * it: losing a generation that cost half a minute of provider calls because
+   * the save failed would be the worse outcome.
+   */
+  const supabase = await userClient();
+  let tripId: string | null = null;
+  let saveError: string | null = null;
+
+  const saved = await saveItinerary(supabase, user.id, result.data);
+  if (saved.ok) {
+    tripId = saved.tripId;
+    const snapshot = await saveItinerarySnapshot(supabase, user.id, saved.tripId, result.data);
+    if (!snapshot.ok) saveError = snapshot.error;
+  } else {
+    saveError = saved.error;
+    console.error('[api/plan] could not save the trip', saved.error);
+  }
+
+  return NextResponse.json(
+    { ...result.data, tripId, saved: saved.ok, saveError },
+    {
+      // A trip is personal and nothing about it should be cached by an intermediary.
+      headers: { 'cache-control': 'no-store, private' },
+    },
+  );
 }
