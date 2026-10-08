@@ -15,7 +15,8 @@
     "test:plan": "node --experimental-strip-types scripts/verify-plan.mjs",
     "test:persistence": "node scripts/verify-persistence.mjs",
     "test:auth": "node --experimental-strip-types scripts/verify-auth.mjs",
-    "test:site": "node scripts/browser-test-site.mjs"
+    "test:site": "node scripts/browser-test-site.mjs",
+    "test:fuel": "node --experimental-strip-types scripts/verify-fuel.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

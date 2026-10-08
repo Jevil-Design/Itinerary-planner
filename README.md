@@ -89,6 +89,20 @@ query. Set `GOOGLE_PLACES_API_KEY` for places that actually resolve.
 
 ---
 
+### Vehicle and fuel
+
+Fuel is costed per route segment from the vehicle, the terrain and the load,
+not from a flat rate. A mountain leg returns noticeably fewer km/l than a
+highway one, which is the difference between a usable budget and an
+optimistic one on a hill route.
+
+Every figure is an **estimate** and is typed as one. Catalogue mileage is a
+conservative real-world number, deliberately not the manufacturer claim, and a
+mileage the user enters themselves overrides it. No live fuel-price feed is
+connected, so the price is a stated assumption the user can replace — quoting
+a stale number as today's price would be the fabrication this codebase avoids
+everywhere else.
+
 ## Environment variables
 
 ```env
@@ -127,6 +141,7 @@ npm run typecheck
 npm run build
 npm run test:auth         # 29 checks: sign-in, errors, and cross-user isolation
 npm run test:persistence  # 14 checks: a trip surviving a fresh sign-in
+npm run test:fuel         # 58 checks: vehicle matching, terrain, mileage override
 npm run test:plan         # 55 checks: the stop engine, offline
 npm run test:browser      # 27 steps through the planner in real Chromium
 npm run test:site -- http://127.0.0.1:3400

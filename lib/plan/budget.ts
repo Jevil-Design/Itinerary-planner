@@ -44,6 +44,13 @@ const HOTEL_PER_NIGHT = 2_200;
 const MEAL = { breakfast: 150, lunch: 280, tea: 80, dinner: 320 };
 
 export type BudgetInput = {
+  /*
+   * When the caller has run the vehicle fuel engine, its total replaces the
+   * flat per-100km figure below. That figure knows nothing about the vehicle,
+   * the terrain or the load; the engine knows all three, so its answer is the
+   * better one wherever it is available.
+   */
+  fuelOverride?: { amount: number; basis: string };
   distanceKm: number;
   mode: TravelMode;
   nights: number;
@@ -57,12 +64,18 @@ export function estimateBudget(input: BudgetInput): Budget {
   const lines: BudgetLine[] = [];
   const count = (kind: string) => input.stops.filter((s) => s === kind).length;
 
-  if (p.lPer100km > 0) {
+  if (input.fuelOverride) {
+    lines.push({
+      label: 'Fuel',
+      amount: estimated(input.fuelOverride.amount, input.fuelOverride.basis),
+      workings: input.fuelOverride.basis,
+    });
+  } else if (p.lPer100km > 0) {
     const litres = (input.distanceKm * p.lPer100km) / 100;
     const fuel = Math.round(litres * FUEL_PER_LITRE);
     lines.push({
       label: 'Fuel',
-      amount: estimated(fuel, `${p.lPer100km} L/100km at ₹${FUEL_PER_LITRE}/L`),
+      amount: estimated(fuel, `${p.lPer100km} L/100km at ₹${FUEL_PER_LITRE}/L — no vehicle given`),
       workings: `${input.distanceKm.toFixed(0)} km → ${litres.toFixed(1)} L × ₹${FUEL_PER_LITRE}`,
     });
   }
